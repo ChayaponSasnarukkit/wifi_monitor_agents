@@ -33,11 +33,11 @@ async def is_ap_config_active(request_body: ConfigureAccessPointData) -> bool:
     if request_body.radio == "5G":
         link_status, _ = await run_subprocess("ifconfig wlan0")
         ssid, _ = await run_subprocess("uci get wireless.AP_radio0.ssid")
-        tx_power, _ = await run_subprocess("uci get wireless.AP_radio0.txpower")
+        tx_power, _ = await run_subprocess("uci get wireless.radio0.txpower")
     else:
         link_status, _ = await run_subprocess("ifconfig wlan1")
         ssid, _ = await run_subprocess("uci get wireless.AP_radio1.ssid")
-        tx_power, _ = await run_subprocess("uci get wireless.AP_radio1.txpower")
+        tx_power, _ = await run_subprocess("uci get wireless.radio1.txpower")
     return _is_ap_config_active(str(link_status), str(ssid), str(tx_power), request_body)   
             
     

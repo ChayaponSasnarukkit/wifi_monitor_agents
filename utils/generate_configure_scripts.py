@@ -20,7 +20,7 @@ wifi
 
 ap_template = """
 uci set wireless.AP_{radio_name}.ssid='{ssid}'
-uci set wireless.AP_{radio_name}.txpower='{tx_power}'
+uci set wireless.{radio_name}.txpower='{tx_power}'
 uci set wireless.AP_{radio_name}.disabled='0'
 uci set wireless.{radio_name}.disabled='0'
 uci commit
