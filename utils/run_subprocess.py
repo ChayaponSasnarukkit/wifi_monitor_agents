@@ -24,7 +24,7 @@ async def is_client_config_active(request_body: ConfigureClientData) -> bool:
     return _is_client_config_active(str(stdout), request_body.ssid)
     
 def _is_ap_config_active(link_status: str, ssid: str, tx_power: int, request_body: ConfigureAccessPointData) -> bool:
-    if int(link_status[link_status.find("TX packets:") + 11]) > 0 and ssid == request_body.ssid and tx_power == request_body.tx_power:
+    if int(link_status[link_status.find("TX packets:") + 11]) > 0 and str(ssid).strip() == request_body.ssid and tx_power == request_body.tx_power:
         return True
     else:
         return False
@@ -38,7 +38,7 @@ async def is_ap_config_active(request_body: ConfigureAccessPointData) -> bool:
         link_status, _ = await run_subprocess("ifconfig wlan1")
         ssid, _ = await run_subprocess("uci get wireless.AP_radio1.ssid")
         tx_power, _ = await run_subprocess("uci get wireless.radio1.txpower")
-    return _is_ap_config_active(str(link_status), str(ssid), str(tx_power), request_body)   
+    return _is_ap_config_active(str(link_status), str(ssid), int(str(tx_power).strip()), request_body)   
             
     
     # from utils.run_subprocess import check_inuse_client_config
