@@ -7,16 +7,16 @@ import uvicorn
 from contextlib import asynccontextmanager
 import asyncio
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
+
+app = FastAPI()
+
+@app.on_event("startup")
+async def startup_event():
     # initial global variable
     app.simulate_process = None
     app.simulate_status = ""
     app.writing_configure_lock = asyncio.Lock()
-    yield
     # Clean up the ML models and release the resources
-
-app = FastAPI()
 
 @app.get("/")
 def index():
