@@ -72,7 +72,9 @@ async def configure_ap(request_body: ConfigureAccessPointData):
         await run_subprocess(generate_ap_script(request_body))
     # lock is released automatically...
     
-    # polling check if wifi is connected with timeout 10 sec
+    # wait for TX packet be reset (take around 10 sec)
+    await asyncio.sleep(10)
+    # polling check if wifi is connected with timeout 150 sec
     cnt = 0
     while cnt < 30:
         if await is_ap_config_active(request_body):
