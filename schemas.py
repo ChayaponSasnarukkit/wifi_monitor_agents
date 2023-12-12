@@ -11,7 +11,6 @@ class RadioEnum(str, Enum):
     radio1 = "2.4G"
 
 class ConfigureClientData(BaseModel):
-    model_config = ConfigDict(use_enum_values=True)
 
     radio: RadioEnum
     connect_to_target_ap: bool
@@ -19,7 +18,6 @@ class ConfigureClientData(BaseModel):
     password: Optional[str] = None
     
 class ConfigureAccessPointData(BaseModel):
-    model_config = ConfigDict(use_enum_values=True)
 
     radio: RadioEnum
     ssid: str

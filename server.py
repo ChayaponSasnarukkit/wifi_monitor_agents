@@ -18,10 +18,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI()
 
-# initial global state
-app.simulate_process = None
-app.simulate_status = ""
-
 @app.get("/")
 def index():
     return {"message": "hello world"}
