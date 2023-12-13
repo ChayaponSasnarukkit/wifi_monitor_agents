@@ -25,3 +25,48 @@ class ConfigureAccessPointData(BaseModel):
     
 # password already be preconfigure in case it is ap_mode or client_mode that not connect to target ap
 # else: need the password
+
+class SimulateTypeEnum(str, Enum):
+    deterministic = "deterministic"
+    web_application = "web_application"
+    file_transfer = "file_transfer"
+
+
+class SimulateDetail(BaseModel):
+
+    simulation_type: SimulateTypeEnum
+    timeout: int
+    average_interval_time: Optional[int] = None
+    average_packet_size: Optional[int] = None
+    average_new_page_packet_size: Optional[int] = None
+    probability_of_load_new_page: Optional[int] = None
+
+
+class SimulateModeEnum(str, Enum):
+    server = "server"
+    client = "client"
+
+
+class SimulateScenarioData(BaseModel):
+
+    simulation_mode: SimulateModeEnum
+    simulation_scenarios: list[SimulateDetail]
+
+    def validator(self) -> 'SimulateScenarioData':
+        if self.simulation_mode == "client":
+            for scenario in self.simulation_scenarios:
+                if scenario.simulation_type == "web_application":
+                    # all parameter is required
+                    if scenario.average_interval_time is None or scenario.average_new_page_packet_size is None or scenario.average_packet_size is None or scenario.probability_of_load_new_page is None:
+                        raise ValueError(
+                            "type web_appliacation required all parameters")
+                elif scenario.simulation_type == "deterministic":
+                    if scenario.average_interval_time is None or scenario.average_packet_size is None:
+                        raise ValueError(
+                            "type web_appliacation required average_packet_size and average_interval_time")
+                elif scenario.simulation_type == "file_transfer":
+                    if scenario.average_packet_size is None:
+                        raise ValueError(
+                            "type web_appliacation required average_packet_size")
+        # ถ้า self.simulation_mode == "server": ไม่ต้องเช็คมีหรือไม่มีก็ได้เพราะใช้แค่ simulate_type ซึ่ง required อยู่แล้ว
+        return self
