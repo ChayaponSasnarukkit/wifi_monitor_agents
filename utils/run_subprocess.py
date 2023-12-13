@@ -1,6 +1,7 @@
 import asyncio
-from fastapi import HTTPException
-from schemas import ConfigureClientData, ConfigureAccessPointData
+import signal
+from fastapi import HTTPException, Request
+from schemas import ConfigureClientData, ConfigureAccessPointData, SimulateScenarioData
 
 async def run_subprocess(command: str):
     process = await asyncio.create_subprocess_shell(command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
@@ -39,7 +40,48 @@ async def is_ap_config_active(request_body: ConfigureAccessPointData) -> bool:
         ssid, _ = await run_subprocess("uci get wireless.AP_radio1.ssid")
         tx_power, _ = await run_subprocess("uci get wireless.radio1.txpower")
     return _is_ap_config_active(link_status.decode(), ssid.strip().decode(), int(tx_power.strip().decode()), request_body)   
-            
+
+async def run_simulation_process(run_scripts: list[str], request: Request):
+    running_processes = []
+    finished_process = []
+    try:
+        # create subprocesses to run all scripts
+        for script in run_scripts:
+            process = await asyncio.create_subprocess_shell(script, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            running_processes.append(process)
+        # polling until it complete
+        while True:
+            # update simulate status
+            for process in running_processes:
+                try:
+                    stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
+                    if not stdout:
+                        # finished_process.append(process)
+                        # process is finish writing
+                        continue
+                    request.app.simulate_status += stdout.decode()
+                except asyncio.TimeoutError:
+                    pass
+                    
+            await asyncio.sleep(5)
+    except asyncio.CancelledError:
+        # send SIGINT to all processes that still running
+        for process in running_processes:
+            if process.returncode is not None:
+                process.send_signal(signal.SIGINT)
+        # raise 
+        raise
+    finally:
+        # TODO: make stdout of cancelled process update to app.simulate_status
+        tasks = [process.wait() in running_processes]
+        asyncio.gather(*tasks)
+        for process in running_processes:
+            stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
+            if not stdout:
+                # finished_process.append(process)
+                # process is finish writing
+                continue
+            request.app.simulate_status += stdout.decode()
     
     # from utils.run_subprocess import check_inuse_client_config
 

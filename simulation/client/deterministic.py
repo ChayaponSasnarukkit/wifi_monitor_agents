@@ -42,6 +42,7 @@ async def simulate_client(reader: StreamReader, writer: StreamWriter):
         print("task get cancelled")
     except Exception as e:
         print(f"unexpected exception was raised when simulating: {str(e)}")
+        raise # raise after finish exec finally
     finally:
         try:
             print("writing eof")
