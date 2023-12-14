@@ -72,7 +72,7 @@ async def run_server():
     try:
         await asyncio.sleep(300)  # Wait for 5 minutes (300 seconds)
     except asyncio.CancelledError:
-        pass
+        print("please PRINT this")
     finally:
         print("Closing server socket.")
         server.close()
