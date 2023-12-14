@@ -75,7 +75,7 @@ async def run_server():
         loop = asyncio.get_event_loop()
         loop.add_signal_handler(signal.SIGINT, handle_sigterm)
     try:
-        await asyncio.sleep(60)  # Wait for 5 minutes (300 seconds)
+        await asyncio.sleep(10)  # Wait for 5 minutes (300 seconds)
     except asyncio.CancelledError:
         print(f"{time.time()}please PRINT this")
     finally:

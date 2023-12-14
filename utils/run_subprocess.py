@@ -85,19 +85,17 @@ async def run_simulation_processes(run_scripts: list[str], request: Request):
     finally:
         # TODO: make stdout of cancelled process update to app.simulate_status
         for process in running_processes:
-            print("commu")
-            stdout, stderr = await process.communicate()
-            print(stdout, stderr)
-            # try:
-            #     stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
-            #     if not stdout:
-            #         # finished_process.append(process)
-            #         # process is finish writing
-            #         continue
-            #     request.app.simulate_status += stdout.decode()
-            # except asyncio.TimeoutError:
-            #     print("bruh")
-            #     break
+            await process.wait()
+            try:
+                stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
+                if not stdout:
+                    # finished_process.append(process)
+                    # process is finish writing
+                    continue
+                request.app.simulate_status += stdout.decode()
+            except asyncio.TimeoutError:
+                print("bruh")
+                break
     
     # from utils.run_subprocess import check_inuse_client_config
 
