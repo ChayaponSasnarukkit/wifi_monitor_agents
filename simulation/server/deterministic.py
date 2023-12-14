@@ -9,6 +9,7 @@ def handle_sigterm(*args):
     print("SIGINT recieved")
     for task in asyncio.all_tasks():
         if task.get_coro() is main_coroutine and not task.cancelled():
+            print(main_coroutine, task.get_coro, task.get_coro() is main_coroutine)
             task.cancel()
 
 async def handle_client(reader: StreamReader, writer: StreamWriter):
@@ -70,7 +71,7 @@ async def run_server():
     # Register a signal handler for SIGINT
     signal.signal(signal.SIGINT, handle_sigterm)
     try:
-        await asyncio.sleep(300)  # Wait for 5 minutes (300 seconds)
+        await asyncio.sleep(60)  # Wait for 5 minutes (300 seconds)
     except asyncio.CancelledError:
         print("please PRINT this")
     finally:
