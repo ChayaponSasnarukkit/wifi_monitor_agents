@@ -1,5 +1,5 @@
 import asyncio
-import signal, time
+import signal, time, platform
 from asyncio.streams import StreamReader, StreamWriter
 from typing import Coroutine
 
@@ -68,8 +68,12 @@ async def handle_client(reader: StreamReader, writer: StreamWriter):
 async def run_server():
     server = await asyncio.start_server(handle_client, '0.0.0.0', 8080)
     print(f"{time.time()}server start at 0.0.0.0:8080")
-    # Register a signal handler for SIGINT
-    signal.signal(signal.SIGINT, handle_sigterm)
+    if platform.system() == "Windows":
+        # Register a signal handler for SIGINT
+        signal.signal(signal.SIGINT, handle_sigterm)
+    else:
+        loop = asyncio.get_event_loop()
+        loop.add_signal_handler(signal.SIGINT, handle_sigterm)
     try:
         await asyncio.sleep(60)  # Wait for 5 minutes (300 seconds)
     except asyncio.CancelledError:
@@ -91,7 +95,7 @@ if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     main_coroutine = run_server()
-    signal.signal(signal.SIGTERM, handle_sigterm)
+    # signal.signal(signal.SIGTERM, handle_sigterm)
     try:
         # extract argument here (timeout)
         # main_coroutine = run_server()
