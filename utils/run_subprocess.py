@@ -85,7 +85,7 @@ async def run_simulation_processes(run_scripts: list[str], request: Request):
     finally:
         # TODO: make stdout of cancelled process update to app.simulate_status
         for process in running_processes:
-            await process.wait()
+            print("commu")
             stdout, stderr = await process.communicate()
             print(stdout, stderr)
             # try:
