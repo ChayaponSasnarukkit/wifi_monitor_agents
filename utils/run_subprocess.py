@@ -1,4 +1,5 @@
 import asyncio
+import os, platform
 import signal
 from fastapi import HTTPException, Request
 from schemas import ConfigureClientData, ConfigureAccessPointData, SimulateScenarioData
@@ -41,7 +42,8 @@ async def is_ap_config_active(request_body: ConfigureAccessPointData) -> bool:
         tx_power, _ = await run_subprocess("uci get wireless.radio1.txpower")
     return _is_ap_config_active(link_status.decode(), ssid.strip().decode(), int(tx_power.strip().decode()), request_body)   
 
-async def run_simulation_process(run_scripts: list[str], request: Request):
+async def run_simulation_processes(run_scripts: list[str], request: Request):
+    # TODO: buffered before send to app (send until last \n)
     running_processes = []
     finished_process = []
     try:
@@ -56,32 +58,45 @@ async def run_simulation_process(run_scripts: list[str], request: Request):
                 try:
                     stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
                     if not stdout:
-                        # finished_process.append(process)
+                        finished_process.append(process)
                         # process is finish writing
                         continue
                     request.app.simulate_status += stdout.decode()
                 except asyncio.TimeoutError:
                     pass
+            if len(finished_process) == len(running_processes):
+                break
                     
             await asyncio.sleep(5)
     except asyncio.CancelledError:
         # send SIGINT to all processes that still running
+        print("inner: recived cancel")
         for process in running_processes:
-            if process.returncode is not None:
+            # asyncio on WINDOWS support only SIGTERM
+            # process.send_signal(signal.SIGINT)
+            if platform.system() == "Windows":
+                print("sending the terminate")
+                process.terminate()
+            else:
                 process.send_signal(signal.SIGINT)
         # raise 
         raise
     finally:
         # TODO: make stdout of cancelled process update to app.simulate_status
-        tasks = [process.wait() in running_processes]
-        asyncio.gather(*tasks)
         for process in running_processes:
-            stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
-            if not stdout:
-                # finished_process.append(process)
-                # process is finish writing
-                continue
-            request.app.simulate_status += stdout.decode()
+            await process.wait()
+            stdout, stderr = await process.communicate()
+            print(stdout, stderr)
+            # try:
+            #     stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
+            #     if not stdout:
+            #         # finished_process.append(process)
+            #         # process is finish writing
+            #         continue
+            #     request.app.simulate_status += stdout.decode()
+            # except asyncio.TimeoutError:
+            #     print("bruh")
+            #     break
     
     # from utils.run_subprocess import check_inuse_client_config
 

@@ -66,12 +66,12 @@ async def handle_client(reader: StreamReader, writer: StreamWriter):
             print(f"unexpected exception was raised when trying to close gracefully: {str(e)}")
 
 async def run_server():
-    server = await asyncio.start_server(handle_client, '0.0.0.0', 8888)
-    print("server start at 0.0.0.0:8888")
+    server = await asyncio.start_server(handle_client, '0.0.0.0', 8080)
+    print("server start at 0.0.0.0:8080")
     # Register a signal handler for SIGINT
     signal.signal(signal.SIGINT, handle_sigterm)
     try:
-        await asyncio.sleep(30)  # Wait for 5 minutes (300 seconds)
+        await asyncio.sleep(300)  # Wait for 5 minutes (300 seconds)
     except asyncio.CancelledError:
         pass
     finally:
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     main_coroutine = run_server()
-    # signal.signal(signal.SIGTERM, handle_sigterm)
+    signal.signal(signal.SIGTERM, handle_sigterm)
     try:
         # extract argument here (timeout)
         # main_coroutine = run_server()
