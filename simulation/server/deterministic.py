@@ -2,7 +2,6 @@ import asyncio
 import signal
 from asyncio.streams import StreamReader, StreamWriter
 from typing import Coroutine
-asyncio.windows_events
 
 main_coroutine: Coroutine = None
 
