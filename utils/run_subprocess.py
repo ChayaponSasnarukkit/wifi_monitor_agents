@@ -78,7 +78,9 @@ async def run_simulation_processes(run_scripts: list[str], request: Request):
                 print("sending the terminate")
                 process.terminate()
             else:
+                print("sending signal")
                 process.send_signal(signal.SIGINT)
+                print("?????")
         # raise 
         raise
     finally:
