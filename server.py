@@ -98,7 +98,7 @@ async def schedule_run_simulation_task(request_body: SimulateScenarioData, reque
     #           1. modify this code for checking before create any task (no need to lock because all of the operation are all synchonus)
     #           2. client(caller) must make sure before send the request
     #       (if you want to run multiple(make sure for same configure) then modify app.simulate_task to be the list)
-    request_body = request_body.validate()
+    request_body = request_body.my_validator()
     if app.active_radio is None:
         raise HTTPException(400, "Please configure the wifi before start simulation")
     if app.simulate_task is not None:
