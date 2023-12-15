@@ -99,7 +99,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
                     pass
             if len(finished_process) == len(running_processes):
                 break
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
     except asyncio.CancelledError:
         # send SIGINT to all processes that still running
         # print("inner: recived cancel")

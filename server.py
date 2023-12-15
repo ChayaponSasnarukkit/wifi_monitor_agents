@@ -36,6 +36,7 @@ async def configure_client(request_body: ConfigureClientData):
     
     # ตรวจสอบว่า ConfigureClientData ที่ได้มากำลังใช้งานอยู่หรือป่าว ถ้าใช้งานอยู่แล้วให้ตอบกลับไปเลยว่าพร้อมใช้งาน
     if await is_client_config_active(request_body):
+        app.active_radio = request_body.radio
         return {"message": "wifi is connected"}
     
     # หากไม่จะต้องแก้ configuration
@@ -67,6 +68,7 @@ async def configure_ap(request_body: ConfigureAccessPointData):
     
     # ตรวจสอบว่า ConfigureClientData ที่ได้มากำลังใช้งานอยู่หรือป่าว ถ้าใช้งานอยู่แล้วให้ตอบกลับไปเลยว่าพร้อมใช้งาน
     if await is_ap_config_active(request_body):
+        app.active_radio = request_body.radio
         return {"message": "wifi is connected"}
     
     # หากไม่จะต้องแก้ configuration
