@@ -67,10 +67,10 @@ def generate_scripts_for_run_simulation(request_body: SimulateScenarioData):
     scripts = []
     if request_body.simulation_mode == "client":
         for scenario in request_body.simulation_scenarios:
-            scripts.append( request_body.alias_name,
-                _generate_script_for_run_client_simulation(scenario))
+            scripts.append(
+                _generate_script_for_run_client_simulation(request_body.alias_name, scenario))
     else:
         for scenario in request_body.simulation_scenarios:
-            scripts.append( request_body.alias_name,
-                _generate_script_for_run_ap_simulation(scenario))
+            scripts.append(
+                _generate_script_for_run_ap_simulation(request_body.alias_name, scenario))
     return scripts
