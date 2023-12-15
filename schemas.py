@@ -49,6 +49,7 @@ class SimulateModeEnum(str, Enum):
 
 class SimulateScenarioData(BaseModel):
 
+    alias_name: str
     simulation_mode: SimulateModeEnum
     simulation_scenarios: list[SimulateDetail]
 

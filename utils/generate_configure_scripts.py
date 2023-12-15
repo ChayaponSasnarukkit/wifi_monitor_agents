@@ -55,22 +55,22 @@ def generate_ap_script(request_body: ConfigureAccessPointData):
         tx_power = request_body.tx_power
     ).strip().replace("\n",";")
     
-def _generate_script_for_run_client_simulation(scenario: SimulateDetail):
+def _generate_script_for_run_client_simulation(alias_name: str, scenario: SimulateDetail):
     if scenario.simulation_type == "deterministic":
-        return f"python -u ./simulation/client/deterministic.py {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time}"
+        return f"python -u ./simulation/client/deterministic.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time}"
 
-def _generate_script_for_run_ap_simulation(scenario: SimulateDetail):
+def _generate_script_for_run_ap_simulation(alias_name: str, scenario: SimulateDetail):
     if scenario.simulation_type == "deterministic":
-        return f"python -u ./simulation/server/deterministic.py {scenario.timeout}"
+        return f"python -u ./simulation/server/deterministic.py {alias_name} {scenario.timeout}"
 
 def generate_scripts_for_run_simulation(request_body: SimulateScenarioData):
     scripts = []
     if request_body.simulation_mode == "client":
         for scenario in request_body.simulation_scenarios:
-            scripts.append(
+            scripts.append( request_body.alias_name,
                 _generate_script_for_run_client_simulation(scenario))
     else:
         for scenario in request_body.simulation_scenarios:
-            scripts.append(
+            scripts.append( request_body.alias_name,
                 _generate_script_for_run_ap_simulation(scenario))
     return scripts
