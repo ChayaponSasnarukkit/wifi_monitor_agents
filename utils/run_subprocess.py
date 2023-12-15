@@ -1,8 +1,9 @@
 import asyncio
-import os, platform
+import os, platform, time
 import signal
 from fastapi import HTTPException, Request
 from schemas import ConfigureClientData, ConfigureAccessPointData, SimulateScenarioData
+from utils.generate_configure_scripts import generate_scripts_for_run_simulation
 
 async def run_subprocess(command: str):
     process = await asyncio.create_subprocess_shell(command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
@@ -42,11 +43,43 @@ async def is_ap_config_active(request_body: ConfigureAccessPointData) -> bool:
         tx_power, _ = await run_subprocess("uci get wireless.radio1.txpower")
     return _is_ap_config_active(link_status.decode(), ssid.strip().decode(), int(tx_power.strip().decode()), request_body)   
 
-async def run_simulation_processes(run_scripts: list[str], request: Request):
+#     app.simulate_task: asyncio.Task = None
+    # app.simulate_status = ""
+    # app.monitor_data = ""
+    # app.writing_configure_lock = asyncio.Lock()
+    # app.active_radio = None
+def parsing_monitor_data(output: str):
+    output = output.split("\n")
+    Tx_Power = output[4].split(" ")[11]
+    Signal = output[5].split(" ")[11]
+    Noise = output[5].split(" ")[15]
+    BitRate = output[6].split(" ")[12]
+    return {"Tx-Power": Tx_Power, "Signal": Signal, "Noise": Noise, "BitRate": BitRate}
+
+async def monitor(request: Request):
+    # find the interface to monitor on
+    if request.app.active_radio == "2.4G":
+        interface = "wlan1"
+    else:
+        interface = "wlan0"
+    
+    while True:
+        stdout, stderr = await run_subprocess(f"iwinfo {interface} info")
+        now = time.time()
+        data = parsing_monitor_data(stdout.decode())
+        for field in request.app.monitor_data:
+            request.app.monitor_data[field].append((now, data[field]))
+        await asyncio.sleep(1)
+    # NO CLEAN UP NEED => raise CancelledError as soon as it recieved
+
+async def run_simulation_processes(request_body: SimulateScenarioData, request: Request):
     # TODO: buffered before send to app (send until last \n)
     running_processes = []
     finished_process = []
+    run_scripts = generate_scripts_for_run_simulation(request_body)
     try:
+        # create monitor task
+        monitor_task = asyncio.create_task(monitor(request))
         # create subprocesses to run all scripts
         for script in run_scripts:
             process = await asyncio.create_subprocess_shell(script, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
@@ -69,21 +102,24 @@ async def run_simulation_processes(run_scripts: list[str], request: Request):
             await asyncio.sleep(5)
     except asyncio.CancelledError:
         # send SIGINT to all processes that still running
-        print("inner: recived cancel")
+        # print("inner: recived cancel")
         for process in running_processes:
             # asyncio on WINDOWS support only SIGTERM
             # process.send_signal(signal.SIGINT)
             if platform.system() == "Windows":
-                print("sending the terminate")
+                # print("sending the terminate")
                 process.terminate()
             else:
-                print("sending signal")
+                # print("sending signal")
                 process.send_signal(signal.SIGINT)
-                print("?????")
+                # print("?????")
         # raise 
         raise
     finally:
         # TODO: make stdout of cancelled process update to app.simulate_status
+        # cancel the monitor task
+        monitor_task.cancel()
+        # wait all process to finish
         for process in running_processes:
             await process.wait()
             try:
@@ -94,8 +130,12 @@ async def run_simulation_processes(run_scripts: list[str], request: Request):
                     continue
                 request.app.simulate_status += stdout.decode()
             except asyncio.TimeoutError:
-                print("bruh")
-                break
+                # print("bruh")
+                continue
+        # make sure monitor is finish cleaning
+        await asyncio.gather(monitor_task, return_exceptions=True)
+        # reset the app.simulate_task to None
+        request.app.simulate_task: asyncio.Task = None
     
     # from utils.run_subprocess import check_inuse_client_config
 

@@ -52,7 +52,7 @@ class SimulateScenarioData(BaseModel):
     simulation_mode: SimulateModeEnum
     simulation_scenarios: list[SimulateDetail]
 
-    def validator(self) -> 'SimulateScenarioData':
+    def validate(self) -> 'SimulateScenarioData':
         if self.simulation_mode == "client":
             for scenario in self.simulation_scenarios:
                 if scenario.simulation_type == "web_application":
