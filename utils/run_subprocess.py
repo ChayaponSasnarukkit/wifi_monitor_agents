@@ -76,8 +76,9 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
     # TODO: buffered before send to app (send until last \n)
     running_processes = []
     finished_process = []
-    run_scripts = generate_scripts_for_run_simulation(request_body)
     try:
+        # generate run_scripts
+        run_scripts = generate_scripts_for_run_simulation(request_body)
         # create monitor task
         monitor_task = asyncio.create_task(monitor(request))
         # create subprocesses to run all scripts
@@ -115,6 +116,8 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
                 # print("?????")
         # raise 
         raise
+    except Exception as e:
+        request.app.simulate_status += f"{request_body.alias_name} {time.time()}: unexpected exception occur {str(e)}"
     finally:
         # TODO: make stdout of cancelled process update to app.simulate_status
         # cancel the monitor task
