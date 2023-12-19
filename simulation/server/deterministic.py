@@ -72,7 +72,8 @@ async def run_server():
     print(f"{alias_name} deterministic_server {time.time()}: server start at 0.0.0.0:8080")
     if platform.system() == "Windows":
         # Register a signal handler for SIGINT
-        signal.signal(signal.SIGINT, handle_sigterm)
+        # signal.signal(signal.SIGINT, handle_sigterm)
+        pass
     else:
         loop = asyncio.get_event_loop()
         loop.add_signal_handler(signal.SIGINT, handle_sigterm)
@@ -112,7 +113,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print(f"{alias_name} deterministic_server {time.time()}: INT INT INT INT \n\n\n")
     except Exception as e:
-        print(e)
+        print(str(e))
     finally:
         loop.close()
         print(f"{alias_name} deterministic_server {time.time()}: \n\nexited\n\n")

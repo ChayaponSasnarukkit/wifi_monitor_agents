@@ -72,7 +72,8 @@ async def main():
     # Register a signal handler for SIGINT
     if platform.system() == "Windows":
         # Register a signal handler for SIGINT
-        signal.signal(signal.SIGINT, handle_sigterm)
+        # signal.signal(signal.SIGINT, handle_sigterm)
+        pass
     else:
         loop = asyncio.get_event_loop()
         loop.add_signal_handler(signal.SIGINT, handle_sigterm)
