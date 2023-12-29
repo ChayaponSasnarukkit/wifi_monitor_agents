@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Request
 from typing import Optional
 from schemas import ConfigureClientData, ConfigureAccessPointData, SimulateScenarioData
 from utils.generate_configure_scripts import generate_client_script, generate_ap_script
-from utils.run_subprocess import run_subprocess, is_client_config_active, is_ap_config_active, run_simulation_processes
+from utils.run_subprocess import run_subprocess, is_client_config_active, is_ap_config_active, run_simulation_processes, polling_ap_state
 import uvicorn
 from contextlib import asynccontextmanager
 import asyncio
@@ -14,6 +14,7 @@ app = FastAPI()
 @app.on_event("startup")
 async def startup_event():
     # initial global variable
+    app.ap_state = "not_ready_to_use"
     app.simulate_task: asyncio.Task = None
     app.simulate_status = ""
     app.read_ptr = 0
@@ -61,7 +62,7 @@ async def configure_client(request_body: ConfigureClientData):
 
 
 @app.post("/configure/ap")
-async def configure_ap(request_body: ConfigureAccessPointData):
+async def configure_ap(request: Request, request_body: ConfigureAccessPointData):
     # ตรวจสอบว่ามีกำลังรัน simulate_task อยู่หรือไม่
     if app.simulate_task is not None:
         raise HTTPException(400, "simulate_task is running")
@@ -69,6 +70,7 @@ async def configure_ap(request_body: ConfigureAccessPointData):
     # ตรวจสอบว่า ConfigureClientData ที่ได้มากำลังใช้งานอยู่หรือป่าว ถ้าใช้งานอยู่แล้วให้ตอบกลับไปเลยว่าพร้อมใช้งาน
     if await is_ap_config_active(request_body):
         app.active_radio = request_body.radio
+        app.ap_state = "ready_to_use"
         return {"message": "wifi is connected"}
     
     # หากไม่จะต้องแก้ configuration
@@ -79,19 +81,15 @@ async def configure_ap(request_body: ConfigureAccessPointData):
         await run_subprocess("cp ./default_config/wireless /etc/config/wireless")
         # configure the new configuration
         await run_subprocess(generate_ap_script(request_body))
+        app.ap_state = "not_ready_to_use [in process of apply config]"
     # lock is released automatically...
     
-    # wait for TX packet be reset (take around 10 sec)
-    await asyncio.sleep(10)
-    # polling check if wifi is connected with timeout 150 sec
-    cnt = 0
-    while cnt < 30:
-        if await is_ap_config_active(request_body):
-            app.active_radio = request_body.radio
-            return {"message": "wifi is connected"}
-        await asyncio.sleep(5)
-        cnt += 1
-    raise HTTPException(400, "Take too much time to enable wifi (AP is not sending ssid broadcast)")
+    asyncio.create_task(polling_ap_state(request, request_body))
+    return {"message": f"task has been scheduled"}
+
+@app.get("/config/ap/state")
+def get_ap_status():
+    return app.ap_state
 
 @app.post("/simulation/run")
 async def schedule_run_simulation_task(request_body: SimulateScenarioData, request: Request):

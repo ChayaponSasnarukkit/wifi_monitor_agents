@@ -141,6 +141,19 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         request.app.simulate_task: asyncio.Task = None
     
     # from utils.run_subprocess import check_inuse_client_config
+async def polling_ap_state(request: Request, request_body):
+    # wait for TX packet be reset (take around 10 sec)
+    await asyncio.sleep(10)
+    # polling check if wifi is connected with timeout 150 sec
+    cnt = 0
+    while cnt < 30:
+        if await is_ap_config_active(request_body):
+            request.app.active_radio = request_body.radio
+            request.app.ap_state = "ready_to_use"
+            return
+        await asyncio.sleep(5)
+        cnt += 1
+    request.app.ap_state = "not_ready_to_use [timeout (AP is not sending ssid broadcast)]"
 
 test_client_status = """iw dev wlan0 link
 Connected to 68:7f:74:3b:b0:01 (on wlan0)
