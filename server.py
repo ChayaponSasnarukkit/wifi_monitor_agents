@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
 from typing import Optional
-from schemas import ConfigureClientData, ConfigureAccessPointData, SimulateScenarioData
+from schemas import ConfigureClientData, ConfigureAccessPointData, SimulateScenarioData, RadioEnum
 from utils.generate_configure_scripts import generate_client_script, generate_ap_script
 from utils.run_subprocess import run_subprocess, is_client_config_active, is_ap_config_active, run_simulation_processes, polling_ap_state
 import uvicorn
@@ -85,11 +85,16 @@ async def configure_ap(request: Request, request_body: ConfigureAccessPointData)
     # lock is released automatically...
     
     asyncio.create_task(polling_ap_state(request, request_body))
-    return {"message": f"task has been scheduled"}
+    return {"message": f"configured, wait for configuration to be apply"}
 
-@app.get("/config/ap/state")
-def get_ap_status():
-    return app.ap_state
+@app.get("/configure/ap/state")
+async def get_ap_status(ssid: str, radio: RadioEnum, tx_power: int):
+    params = ConfigureAccessPointData(radio=radio, ssid=ssid, tx_power=tx_power)
+    if await is_ap_config_active(params):
+        app.active_radio = radio
+        return "ready_to_use"
+    else:
+        return "not_ready_to_use"
 
 @app.post("/simulation/run")
 async def schedule_run_simulation_task(request_body: SimulateScenarioData, request: Request):
