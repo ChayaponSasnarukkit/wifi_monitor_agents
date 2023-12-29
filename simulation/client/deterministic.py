@@ -5,6 +5,7 @@ from typing import Coroutine
 
 main_coroutine: Coroutine = None
 "python -u ./simulation/client/deterministic.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time}"
+server_ip = "192.168.2.1"
 alias_name = ""
 timeout = 0
 average_packet_size = 64
@@ -66,7 +67,7 @@ async def simulate_client(reader: StreamReader, writer: StreamWriter):
 
 async def main():
     # create connection
-    reader, writer = await asyncio.open_connection('127.0.0.1', 8888)
+    reader, writer = await asyncio.open_connection(server_ip, 8888)
     # schedule simulate_client task
     simulate_client_task = asyncio.create_task(simulate_client(reader, writer))
     # Register a signal handler for SIGINT
@@ -93,6 +94,8 @@ if __name__ == "__main__":
     try:
         # extract argument here
         alias_name, timeout, average_packet_size, average_interval_time = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
+        if len(sys.argv) == 6:
+            server_ip = sys.argv[5]
         # create main_coroutine
         main_coroutine = main()
         print(f"{alias_name} deterministic_client {time.time()}: hello change from term to INT")

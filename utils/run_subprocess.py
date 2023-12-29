@@ -21,8 +21,14 @@ def _is_client_config_active(link_status: str, new_ssid: str) -> bool:
 
 async def is_client_config_active(request_body: ConfigureClientData) -> bool:
     if request_body.radio == "5G":
+        stdout, stderr = await run_subprocess("ifconfig")
+        if stdout.decode().find("wlan0") == -1:
+            return False
         stdout, stderr = await run_subprocess("iw dev wlan0 link")
     else:
+        stdout, stderr = await run_subprocess("ifconfig")
+        if stdout.decode().find("wlan1") == -1:
+            return False
         stdout, stderr = await run_subprocess("iw dev wlan1 link")
     return _is_client_config_active(stdout.decode(), request_body.ssid)
     
@@ -34,10 +40,16 @@ def _is_ap_config_active(link_status: str, ssid: str, tx_power: int, request_bod
 
 async def is_ap_config_active(request_body: ConfigureAccessPointData) -> bool:
     if request_body.radio == "5G":
+        stdout, stderr = await run_subprocess("ifconfig")
+        if stdout.decode().find("wlan0") == -1:
+            return False
         link_status, _ = await run_subprocess("ifconfig wlan0")
         ssid, _ = await run_subprocess("uci get wireless.AP_radio0.ssid")
         tx_power, _ = await run_subprocess("uci get wireless.radio0.txpower")
     else:
+        stdout, stderr = await run_subprocess("ifconfig")
+        if stdout.decode().find("wlan1") == -1:
+            return False
         link_status, _ = await run_subprocess("ifconfig wlan1")
         ssid, _ = await run_subprocess("uci get wireless.AP_radio1.ssid")
         tx_power, _ = await run_subprocess("uci get wireless.radio1.txpower")

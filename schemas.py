@@ -51,6 +51,7 @@ class SimulateScenarioData(BaseModel):
 
     alias_name: str
     simulation_mode: SimulateModeEnum
+    server_ip: Optional[str] = None
     simulation_scenarios: list[SimulateDetail]
 
     def my_validator(self) -> 'SimulateScenarioData':
