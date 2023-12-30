@@ -18,6 +18,11 @@ def handle_sigterm(*args):
             task.cancel()
 
 async def simulate_client(reader: StreamReader, writer: StreamWriter):
+    global server_ip
+    global alias_name
+    global timeout
+    global average_packet_size
+    global average_interval_time
     try:
         # initial parameter
         # average_interval_time:00000 average_packet_size:0000000\n
