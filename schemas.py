@@ -56,6 +56,8 @@ class SimulateScenarioData(BaseModel):
 
     def my_validator(self) -> 'SimulateScenarioData':
         if self.simulation_mode == "client":
+            if not self.server_ip:
+                self.server_ip = "192.168.2.1"
             for scenario in self.simulation_scenarios:
                 if scenario.simulation_type == "web_application":
                     # all parameter is required
