@@ -84,7 +84,7 @@ async def main():
         loop = asyncio.get_event_loop()
         loop.add_signal_handler(signal.SIGINT, handle_sigterm)
     try:
-        await asyncio.sleep(30) # wait for 300 sec
+        await asyncio.sleep(timeout) # wait for 300 sec
     except asyncio.CancelledError:
         pass
     finally:

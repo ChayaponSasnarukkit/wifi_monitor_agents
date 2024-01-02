@@ -127,7 +127,7 @@ async def schedule_run_cancel_task(request: Request):
     #       (if you want to run multiple(make sure for same configure) then modify app.simulate_task to be the list)
     start = time.time()
     if app.simulate_task is None:
-        raise HTTPException(400, "there is no simulate_task running")
+        return {"message": "there is no simulate_task running"}
     app.simulate_task.cancel()
     try:
         await app.simulate_task
