@@ -59,7 +59,10 @@ def _generate_script_for_run_client_simulation(alias_name: str, scenario: Simula
     if scenario.simulation_type == "deterministic":
         return f"python -u ./simulation/client/deterministic.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time} {server_ip}"
     if scenario.simulation_type == "web_application":
-        return f"python -u ./simulation/client/deterministic.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time} {server_ip}"
+        return f"python -u ./simulation/client/web_application.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time} {server_ip}"
+    if scenario.simulation_type == "file_transfer":
+        return f"python -u ./simulation/client/file_transfer.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time} {server_ip}"
+
 def _generate_script_for_run_ap_simulation(alias_name: str, scenario: SimulateDetail):
     if scenario.simulation_type == "deterministic":
         return f"python -u ./simulation/server/deterministic.py {alias_name} {scenario.timeout}"

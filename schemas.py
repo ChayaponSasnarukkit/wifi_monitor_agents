@@ -38,8 +38,8 @@ class SimulateDetail(BaseModel):
     timeout: int
     average_interval_time: Optional[int] = None
     average_packet_size: Optional[int] = None
-    average_new_page_packet_size: Optional[int] = None
-    probability_of_load_new_page: Optional[int] = None
+    # average_new_page_packet_size: Optional[int] = None
+    # probability_of_load_new_page: Optional[int] = None
 
 
 class SimulateModeEnum(str, Enum):
@@ -61,7 +61,7 @@ class SimulateScenarioData(BaseModel):
             for scenario in self.simulation_scenarios:
                 if scenario.simulation_type == "web_application":
                     # all parameter is required
-                    if scenario.average_interval_time is None or scenario.average_new_page_packet_size is None or scenario.average_packet_size is None or scenario.probability_of_load_new_page is None:
+                    if scenario.average_interval_time is None or scenario.average_packet_size is None:
                         raise ValueError(
                             "type web_appliacation required all parameters")
                 elif scenario.simulation_type == "deterministic":
