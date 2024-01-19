@@ -18,6 +18,7 @@ def main():
         end_time = time.time() + timeout
         lambda_size = 1/average_packet_size
         lambda_time = 1/average_interval_time
+        print(template_log.format(alias_name, time.time(), f"process has started"))
         while time.time() < end_time:
             try:
                 # random packet size

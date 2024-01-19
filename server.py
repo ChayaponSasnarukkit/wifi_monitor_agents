@@ -17,6 +17,7 @@ file_simulation_process = None
 @app.on_event("startup")
 async def startup_event():
     # initial global variable
+    global web_simulation_process; global file_simulation_process
     web_simulation_process = await asyncio.create_subprocess_shell("python -u ./simulation/server/web_application.py")
     file_simulation_process = await asyncio.create_subprocess_shell("python -u ./simulation/server/file_transfer.py")
     app.ap_state = "not_ready_to_use"

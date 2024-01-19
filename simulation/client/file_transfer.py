@@ -14,6 +14,7 @@ def main():
         total_files = 0
         total_bytes = 0
         global base_url; global alias_name; global average_file_size; global file_size_standard_deviation; global timeout
+        print(template_log.format(alias_name, time.time(), f"process has started"))
         check_point = time.time() + 30
         end_time = time.time() + timeout
         while time.time() < end_time:
