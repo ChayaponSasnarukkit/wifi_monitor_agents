@@ -106,12 +106,13 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             # update simulate status
             for process in running_processes:
                 try:
-                    stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
-                    if not stdout:
-                        finished_process.append(process)
-                        # process is finish writing
-                        continue
-                    request.app.simulate_status += stdout.decode()
+                    if process not in finished_process:
+                        stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
+                        if not stdout:
+                            finished_process.append(process)
+                            # process is finish writing
+                            continue
+                        request.app.simulate_status += stdout.decode()
                 except asyncio.TimeoutError:
                     pass
             if len(finished_process) == len(running_processes) and time.time() > end_time:
