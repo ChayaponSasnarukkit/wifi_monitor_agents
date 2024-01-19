@@ -11,9 +11,14 @@ import time
 
 app = FastAPI()
 
+web_simulation_process = None
+file_simulation_process = None
+
 @app.on_event("startup")
 async def startup_event():
     # initial global variable
+    web_simulation_process = await asyncio.create_subprocess_shell("python -u ./simulation/server/web_application.py")
+    file_simulation_process = await asyncio.create_subprocess_shell("python -u ./simulation/server/file_transfer.py")
     app.ap_state = "not_ready_to_use"
     app.simulate_task: asyncio.Task = None
     app.simulate_status = ""
@@ -21,6 +26,11 @@ async def startup_event():
     app.writing_configure_lock = asyncio.Lock()
     app.active_radio = None
     app.monitor_data = {"Tx-Power": [], "Signal": [], "Noise": [], "BitRate": []}
+    
+@app.on_event("shutdown")
+async def shutdown_event():
+    web_simulation_process.terminate()
+    file_simulation_process.terminate()
 
 def testing(request: Request):
     request.app.simulate_status = "WOW!!, It actually work"

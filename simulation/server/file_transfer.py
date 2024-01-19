@@ -1,7 +1,6 @@
 from fastapi import Depends, FastAPI, Request
 from typing import List, Optional
 import uvicorn, asyncio, string, random
-import sqlalchemy
 from fastapi.responses import StreamingResponse, FileResponse
 app = FastAPI()
 
