@@ -91,6 +91,9 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
     try:
         # generate run_scripts
         run_scripts = generate_scripts_for_run_simulation(request_body)
+        max_timeout = 0
+        for scenario in request_body.simulation_scenarios:
+            max_timeout = max(scenario.timeout, max_timeout)
         # create monitor task
         monitor_task = asyncio.create_task(monitor(request))
         # create subprocesses to run all scripts
@@ -98,6 +101,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             process = await asyncio.create_subprocess_shell(script, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             running_processes.append(process)
         # polling until it complete
+        end_time = time.time() + max_timeout
         while True:
             # update simulate status
             for process in running_processes:
@@ -110,7 +114,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
                     request.app.simulate_status += stdout.decode()
                 except asyncio.TimeoutError:
                     pass
-            if len(finished_process) == len(running_processes):
+            if len(finished_process) == len(running_processes) and time.time() > end_time:
                 break
             await asyncio.sleep(1)
     except asyncio.CancelledError:
