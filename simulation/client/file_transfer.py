@@ -1,4 +1,3 @@
-import numpy as np
 import random, sys, requests, time
 
 server_ip = "192.168.2.1"
@@ -21,7 +20,7 @@ def main():
             try:
                 # print(time.time())
                 # random file size
-                file_size = int(np.random.normal(average_file_size, file_size_standard_deviation))
+                file_size = int(random.normalvariate(average_file_size, file_size_standard_deviation))
                 # sent request for string that have size equal to file size
                 file = requests.get(f"{base_url}/downloadfilea/?size={file_size}")
                 total_files += 1; total_bytes += len(file.content)

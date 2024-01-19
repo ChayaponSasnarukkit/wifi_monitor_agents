@@ -1,4 +1,3 @@
-import numpy as np
 import random, sys, requests, time
 
 server_ip = "192.168.2.1"
@@ -17,10 +16,12 @@ def main():
         global base_url; global alias_name; global average_packet_size; global average_interval_time; global timeout
         check_point = time.time() + 30
         end_time = time.time() + timeout
+        lambda_size = 1/average_packet_size
+        lambda_time = 1/average_interval_time
         while time.time() < end_time:
             try:
                 # random packet size
-                packet_size = int(np.random.exponential(scale=average_packet_size))
+                packet_size = int(random.expovariate(lambda_size))
                 # sent request for string that have size equal to packet size
                 res = requests.get(f"{base_url}/sim_api/{packet_size}")
                 total_requests += 1; total_bytes += len(res.content)
@@ -28,7 +29,7 @@ def main():
                     print(template_log.format(alias_name, time.time(), f"{total_requests} requests sent, {total_bytes} bytes recv from {base_url}"))
                     check_point += 30
                 # sleep => simulate the user read the page
-                time.sleep(np.random.exponential(scale=average_interval_time))
+                time.sleep(random.expovariate(lambda_time))
             except KeyboardInterrupt:
                 raise
             except Exception as e:
