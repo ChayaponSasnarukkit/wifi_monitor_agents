@@ -1,5 +1,5 @@
 import asyncio
-import os, platform, time, json
+import os, platform, time, json, subprocess
 import signal
 from fastapi import HTTPException, Request
 from schemas import ConfigureClientData, ConfigureAccessPointData, SimulateScenarioData
@@ -141,8 +141,10 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             else:
                 print("sending signal")
                 # process.send_signal(signal.SIGINT)
-                process.terminate()
+                # process.terminate()
                 # os.kill(process.pid, signal.SIGINT)
+                result = subprocess.run(["kill", str(process.pid)], stdout=subprocess.PIPE)
+                print(result.stdout.decode())
                 print("?????")
         # raise 
         raise
@@ -155,20 +157,9 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         # wait all process to finish
         for process in running_processes:
             print("wait process")
-            await process.wait()
-            await asyncio.sleep(5)
-            print("try not waiting waiting")
-            try:
-                stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
-                print(stdout)
-                if not stdout:
-                    # finished_process.append(process)
-                    # process is finish writing
-                    continue
-                request.app.simulate_status += stdout.decode()
-            except asyncio.TimeoutError:
-                # print("bruh")
-                continue
+            stdout, stderr = await process.communicate()
+            print(stdout, stderr)
+            request.app.simulate_status += stdout.decode()
         # make sure monitor is finish cleaning
         await asyncio.gather(monitor_task, return_exceptions=True)
         print("read file")
