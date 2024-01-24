@@ -160,7 +160,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             command = f"ps | grep \"  {script}\"| grep -v grep" + "| awk '{print $1}'"
             print(command)
             real_pid, _ = await run_subprocess(command)
-            print(real_pid)
+            print(real_pid, process.pid)
             ps_all, _ = await run_subprocess("ps")
             print(ps_all)
             try:
