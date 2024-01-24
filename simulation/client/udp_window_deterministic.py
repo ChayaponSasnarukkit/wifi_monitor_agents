@@ -170,7 +170,7 @@ def main():
                     error_log[error] = []
                 check_point += 30
     except KeyboardInterrupt:
-        pass
+        print("INT receive")
     except Exception as e:
         print(template_log.format(alias_name, time.time(), f"unexpected exception \"{str(e)}\" has occured"))
     finally:

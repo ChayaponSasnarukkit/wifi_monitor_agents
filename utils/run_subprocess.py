@@ -139,9 +139,9 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
                 # print("sending the terminate")
                 process.terminate()
             else:
-                # print("sending signal")
+                print("sending signal")
                 process.send_signal(signal.SIGINT)
-                # print("?????")
+                print("?????")
         # raise 
         raise
     except Exception as e:
@@ -152,7 +152,9 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         monitor_task.cancel()
         # wait all process to finish
         for process in running_processes:
+            print("wait process")
             await process.wait()
+            print("finish waiting")
             try:
                 stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
                 if not stdout:
