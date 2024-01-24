@@ -137,6 +137,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             # not python script itself, must find the real one first
             print("hello")
             command = f"ps | grep \"  {script}\"| grep -v grep" + "| awk '{print $1}'"
+            print(command)
             real_pid, _ = await run_subprocess(command)
             print(real_pid)
             try:
