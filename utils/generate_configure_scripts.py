@@ -60,6 +60,8 @@ def _generate_script_for_run_client_simulation(alias_name: str, scenario: Simula
     if scenario.simulation_type == "deterministic":
         control_ip = subprocess.run(["uci", "get", "network.lan.ipaddr"], capture_output=True, text=True).stdout
         tmp_file = f"udp_client_{str(time.time()).replace('.', '_')}.json"
+        print(control_ip)
+        print(f"python -u ./simulation/client/udp_window_deterministic.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time} {tmp_file} {control_ip} {server_ip}")
         return f"python -u ./simulation/client/udp_window_deterministic.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time} {tmp_file} {control_ip} {server_ip}", tmp_file
     if scenario.simulation_type == "web_application":
         tmp_file = f"web_client_{str(time.time()).replace('.', '_')}.json"
