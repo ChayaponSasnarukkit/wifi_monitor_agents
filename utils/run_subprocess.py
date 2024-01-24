@@ -136,7 +136,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             # process.pid will be pid of /bin/sh -c python -u ./simulation/client/udp_window_deterministic.py w9 300 128 10 udp_client_1706125329_
             # not python script itself, must find the real one first
             print("hello")
-            command = f"ps w | grep \"  {script}\"| grep -v grep" + "| awk '{print $1}'"
+            command = f"ps | grep \"  {script}\"| grep -v grep" + "| awk '{print $1}'"
             real_pid, _ = await run_subprocess(command)
             print(real_pid)
             try:
