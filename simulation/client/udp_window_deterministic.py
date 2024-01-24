@@ -169,8 +169,10 @@ def main():
                     print(template_log.format(alias_name, time.time(), f"\"{error}\" occured more {len(error_log[error])} times"))
                     error_log[error] = []
                 check_point += 30
-    # except Exception as e:
-    #     print(template_log.format(alias_name, time.time(), f"unexpected exception \"{str(e)}\" has occured"))
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        print(template_log.format(alias_name, time.time(), f"unexpected exception \"{str(e)}\" has occured"))
     finally:
         for addr in recv_bytes:
             print(template_log.format(alias_name, time.time(), f"{recv_bytes[addr]} bytes recv from {addr}"))
