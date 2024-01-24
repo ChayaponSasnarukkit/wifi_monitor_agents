@@ -138,7 +138,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         #     print("hello")
         #     command = f"ps | grep \"  {script}\"| grep -v grep" + "| awk '{print $1}'"
         #     print(command)
-        #     real_pid, _ = await run_subprocess
+        #     real_pid, _ = await run_subprocess(command)
         #     print(real_pid)
         #     try:
         #         print(int(real_pid.decode().strip()))
@@ -159,8 +159,10 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             print("hello")
             command = f"ps | grep \"  {script}\"| grep -v grep" + "| awk '{print $1}'"
             print(command)
-            real_pid, _ = await run_subprocess
+            real_pid, _ = await run_subprocess(command)
             print(real_pid)
+            ps_all = await run_subprocess("ps")
+            print(ps_all, ps_all.find(script))
             try:
                 print(int(real_pid.decode().strip()))
                 real_pid_int = int(real_pid.decode().strip())
