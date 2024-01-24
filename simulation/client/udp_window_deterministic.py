@@ -25,6 +25,7 @@ send_bytes = {}
 monitor_data = []
 
 def signal_handler(signum, frame):
+    print("Received signal {signum}")
     raise KeyboardInterrupt(f"Received signal {signum}")
 
 def parsing_header_information(data, addr, read_timestamp):
@@ -188,6 +189,7 @@ def main():
         print(template_log.format(alias_name, time.time(), f"socket has been closed, program exited"))
         
 if __name__ == "__main__":
+    signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
     try:
         alias_name, timeout, average_packet_size, average_interval_time, absolute_path, control_ip = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), sys.argv[5], sys.argv[6]
