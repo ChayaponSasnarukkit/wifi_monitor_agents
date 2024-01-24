@@ -159,6 +159,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         for process in running_processes:
             print("wait process")
             stdout, stderr = await process.communicate()
+            print("hello")
             print(stdout, stderr)
             request.app.simulate_status += stdout.decode()
         # make sure monitor is finish cleaning
