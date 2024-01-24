@@ -155,7 +155,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         # wait all process to finish
         for process in running_processes:
             print("wait process")
-            # await process.wait()
+            await process.wait()
             await asyncio.sleep(5)
             print("try not waiting waiting")
             try:
