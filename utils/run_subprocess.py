@@ -143,7 +143,8 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
                 # process.send_signal(signal.SIGINT)
                 # process.terminate()
                 # os.kill(process.pid, signal.SIGINT)
-                result = subprocess.run(["kill", str(process.pid)], stdout=subprocess.PIPE)
+                print(process.pid)
+                result = subprocess.run(["kill", "-9", str(process.pid)], stdout=subprocess.PIPE)
                 print(result.stdout.decode())
                 print("?????")
         # raise 
