@@ -104,6 +104,7 @@ def send_to(data, addr):
 def main():
     global parameters; global timeout; global alias_name; global template_log; global states; global server_addr; control_ip; global absolute_path
     global error_log; global recv_bytes; global send_bytes; global average_interval_time; global average_packet_size
+    print(server_addr)
     try:
         start_time = time.time()
         next_time = start_time
@@ -187,6 +188,7 @@ if __name__ == "__main__":
         if len(sys.argv) == 8:
             server_ip = sys.argv[7]
             server_addr = (server_ip, 8888)
+            print(server_ip, control_ip)
     except:
         pass
     client_socket.connect(server_addr)
