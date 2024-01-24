@@ -140,7 +140,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
                 process.terminate()
             else:
                 print("sending signal")
-                process.send_signal(signal.SIGINT)
+                process.terminate()
                 print("?????")
         # raise 
         raise
@@ -153,8 +153,8 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         # wait all process to finish
         for process in running_processes:
             print("wait process")
-            # await process.wait()
-            await asyncio.sleep(5)
+            await process.wait()
+            # await asyncio.sleep(5)
             print("try not waiting waiting")
             try:
                 stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
