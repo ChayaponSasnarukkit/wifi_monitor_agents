@@ -1,5 +1,5 @@
 import select, sys, json
-import socket, asyncio, time
+import socket, asyncio, time, signal
 
 timeout = 60
 average_packet_size = 128
@@ -23,6 +23,9 @@ error_log = {}
 recv_bytes = {}
 send_bytes = {}
 monitor_data = []
+
+def signal_handler(signum, frame):
+    raise KeyboardInterrupt(f"Received signal {signum}")
 
 def parsing_header_information(data, addr, read_timestamp):
     # [str(0).zfill(7).encode(), f"{time.time():.7f}".encode(), ((average_packet_size-25)*"a").encode()]
@@ -185,6 +188,7 @@ def main():
         print(template_log.format(alias_name, time.time(), f"socket has been closed, program exited"))
         
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal_handler)
     try:
         alias_name, timeout, average_packet_size, average_interval_time, absolute_path, control_ip = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), sys.argv[5], sys.argv[6]
         if len(sys.argv) == 8:
