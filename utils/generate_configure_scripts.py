@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from schemas import ConfigureClientData, ConfigureAccessPointData, SimulateScenarioData, SimulateDetail
+import time, subprocess
 
 client_template = """
 uci set wireless.client_{radio_name}.ssid='{ssid}'
@@ -57,26 +58,36 @@ def generate_ap_script(request_body: ConfigureAccessPointData):
     
 def _generate_script_for_run_client_simulation(alias_name: str, scenario: SimulateDetail, server_ip: str):
     if scenario.simulation_type == "deterministic":
-        return f"python -u ./simulation/client/udp_window_deterministic.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time} {server_ip}"
+        control_ip = subprocess.run(["uci", "get", "network.lan.ipaddr"], capture_output=True, text=True).stdout
+        tmp_file = f"udp_client_{str(time.time()).replace('.', '_')}.json"
+        return f"python -u ./simulation/client/udp_window_deterministic.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time} {tmp_file} {control_ip} {server_ip}", tmp_file
     if scenario.simulation_type == "web_application":
-        return f"python -u ./simulation/client/web_application.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time} {server_ip}"
+        tmp_file = f"web_client_{str(time.time()).replace('.', '_')}.json"
+        return f"python -u ./simulation/client/web_application.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {scenario.average_interval_time} {tmp_file} {server_ip}", tmp_file
     if scenario.simulation_type == "file_transfer":
-        return f"python -u ./simulation/client/file_transfer.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {server_ip}"
-
+        tmp_file = f"file_client_{str(time.time()).replace('.', '_')}.json"
+        return f"python -u ./simulation/client/file_transfer.py {alias_name} {scenario.timeout} {scenario.average_packet_size} {tmp_file} {server_ip}", tmp_file
+    return None, None
 def _generate_script_for_run_ap_simulation(alias_name: str, scenario: SimulateDetail):
     if scenario.simulation_type == "deterministic":
-        return f"python -u ./simulation/server/udp_window_deterministic.py {alias_name} {scenario.timeout}"
+        tmp_file = f"udp_server_{str(time.time()).replace('.', '_')}.json"
+        return f"python -u ./simulation/server/udp_window_deterministic.py {alias_name} {scenario.timeout} {tmp_file}"
+    return None, None
 
 def generate_scripts_for_run_simulation(request_body: SimulateScenarioData):
-    scripts = []
+    scripts = []; tmp_files = []
     if request_body.simulation_mode == "client":
         for scenario in request_body.simulation_scenarios:
-            script = _generate_script_for_run_client_simulation(request_body.alias_name, scenario, server_ip=request_body.server_ip)
-            if script:
-                scripts.append(script) 
-    else:
-        for scenario in request_body.simulation_scenarios:
-            script = _generate_script_for_run_ap_simulation(request_body.alias_name, scenario)
+            script, file_name = _generate_script_for_run_client_simulation(request_body.alias_name, scenario, server_ip=request_body.server_ip)
             if script:
                 scripts.append(script)
-    return scripts
+            if file_name:
+                 tmp_files.append(file_name)
+    else:
+        for scenario in request_body.simulation_scenarios:
+            script, file_name = _generate_script_for_run_ap_simulation(request_body.alias_name, scenario)
+            if script:
+                scripts.append(script)
+            if file_name:
+                tmp_files.append(file_name)
+    return scripts, tmp_files

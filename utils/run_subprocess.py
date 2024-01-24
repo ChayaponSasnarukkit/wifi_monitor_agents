@@ -1,5 +1,5 @@
 import asyncio
-import os, platform, time
+import os, platform, time, json
 import signal
 from fastapi import HTTPException, Request
 from schemas import ConfigureClientData, ConfigureAccessPointData, SimulateScenarioData
@@ -83,6 +83,17 @@ async def monitor(request: Request):
             request.app.monitor_data[field].append((now, data[field]))
         await asyncio.sleep(1)
     # NO CLEAN UP NEED => raise CancelledError as soon as it recieved
+    
+def read_json_file_and_delete_file(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+        os.remove(file_path)
+        return data
+    except FileNotFoundError:
+        print(f"The file {file_path} does not exist.")
+    except json.JSONDecodeError:
+        print(f"Error decoding JSON in {file_path}. Please check the file format.")
 
 async def run_simulation_processes(request_body: SimulateScenarioData, request: Request):
     # TODO: buffered before send to app (send until last \n)
@@ -90,7 +101,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
     finished_process = []
     try:
         # generate run_scripts
-        run_scripts = generate_scripts_for_run_simulation(request_body)
+        run_scripts, transfer_files = generate_scripts_for_run_simulation(request_body)
         max_timeout = 0
         for scenario in request_body.simulation_scenarios:
             max_timeout = max(scenario.timeout, max_timeout)
@@ -154,6 +165,10 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
                 continue
         # make sure monitor is finish cleaning
         await asyncio.gather(monitor_task, return_exceptions=True)
+        for file_path in transfer_files:
+            data = read_json_file_and_delete_file(file_path)
+            if data:
+                request.app.monitor_data.update(data)
         # reset the app.simulate_task to None
         request.app.simulate_task: asyncio.Task = None
     
