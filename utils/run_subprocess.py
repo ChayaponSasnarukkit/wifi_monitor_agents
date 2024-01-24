@@ -136,8 +136,13 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             # process.pid will be pid of /bin/sh -c python -u ./simulation/client/udp_window_deterministic.py w9 300 128 10 udp_client_1706125329_
             # not python script itself, must find the real one first
             real_pid, _ = await run_subprocess("ps w | grep \"  python -u ./simulation/client/udp_window_deterministic.py w9 300 128 10 udp_client_1706125329_812711.json\"| grep -v grep| awk '{print $1}'")
-            print(int(real_pid.decode().strip()))
-            os.kill(int(real_pid.decode().strip()), signal.SIGTERM)
+            try:
+                print(int(real_pid.decode().strip()))
+                real_pid_int = int(real_pid.decode().strip())
+                os.kill(int(real_pid.decode().strip()), signal.SIGTERM)
+            except ValueError:
+                # this mean real_pid is empty, so pass
+                pass
         # raise 
         raise
     except Exception as e:
