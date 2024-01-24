@@ -110,12 +110,12 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         # create subprocesses to run all scripts
         for script in run_scripts:
             process = await asyncio.create_subprocess_shell(script, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            running_processes.append(process)
+            running_processes.append((process, script))
         # polling until it complete
         end_time = time.time() + max_timeout
         while True:
             # update simulate status
-            for process in running_processes:
+            for process, script in running_processes:
                 try:
                     if process not in finished_process:
                         stdout = await asyncio.wait_for(process.stdout.read(1024), timeout=1)
@@ -132,21 +132,12 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
     except asyncio.CancelledError:
         # send SIGINT to all processes that still running
         # print("inner: recived cancel")
-        for process in running_processes:
-            # asyncio on WINDOWS support only SIGTERM
-            # process.send_signal(signal.SIGINT)
-            if platform.system() == "Windows":
-                # print("sending the terminate")
-                process.terminate()
-            else:
-                print("sending signal")
-                # process.send_signal(signal.SIGINT)
-                # process.terminate()
-                # os.kill(process.pid, signal.SIGINT)
-                print(process.pid)
-                result = subprocess.run(["kill", "-9", str(process.pid)], stdout=subprocess.PIPE)
-                print(result.stdout.decode())
-                print("?????")
+        for process, script in running_processes:
+            # process.pid will be pid of /bin/sh -c python -u ./simulation/client/udp_window_deterministic.py w9 300 128 10 udp_client_1706125329_
+            # not python script itself, must find the real one first
+            real_pid, _ = await run_subprocess("ps w | grep \"  python -u ./simulation/client/udp_window_deterministic.py w9 300 128 10 udp_client_1706125329_812711.json\"| grep -v grep| awk '{print $1}'")
+            print(int(real_pid.decode().strip()))
+            os.kill(int(real_pid.decode().strip()), signal.SIGTERM)
         # raise 
         raise
     except Exception as e:
