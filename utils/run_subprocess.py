@@ -152,7 +152,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         # cancel the monitor task
         monitor_task.cancel()
         # wait all process to finish
-        for process in running_processes:
+        for process, script in running_processes:
             print("wait process")
             stdout, stderr = await process.communicate()
             print("hello")
