@@ -128,7 +128,7 @@ def main():
                 try:
                     # sending the initial message
                     if time.time()-last_time >= 1:
-                        print(time.time()-last_time)
+                        # print(time.time()-last_time)
                         send_to(need_to_send_parameter, server_addr)
                         last_time = time.time()
                         log_message = f"parameters sent to {server_addr}, waiting for ack packet"
