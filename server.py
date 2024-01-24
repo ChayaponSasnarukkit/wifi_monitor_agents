@@ -69,6 +69,7 @@ async def configure_client(request_body: ConfigureClientData):
             return {"message": "wifi is connected"}
         await asyncio.sleep(1)
         cnt += 1
+    print("raise Take too much time to connect wifi")
     raise HTTPException(400, "Take too much time to connect wifi")
 
 

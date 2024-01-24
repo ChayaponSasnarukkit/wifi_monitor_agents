@@ -102,7 +102,7 @@ def send_to(data, addr):
         return 1
 
 def main():
-    global parameters; global timeout; global alias_name; global template_log; global states; server_addr; control_ip; global absolute_path
+    global parameters; global timeout; global alias_name; global template_log; global states; global server_addr; control_ip; global absolute_path
     global error_log; global recv_bytes; global send_bytes; global average_interval_time; global average_packet_size
     try:
         start_time = time.time()
