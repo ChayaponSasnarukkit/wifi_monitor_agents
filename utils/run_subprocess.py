@@ -161,7 +161,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             print(command)
             real_pid, _ = await run_subprocess(command)
             print(real_pid)
-            ps_all = await run_subprocess("ps")
+            ps_all, _ = await run_subprocess("ps")
             print(ps_all, ps_all.find(script))
             try:
                 print(int(real_pid.decode().strip()))
