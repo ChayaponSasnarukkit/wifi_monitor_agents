@@ -132,6 +132,28 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
     except asyncio.CancelledError:
         # send SIGINT to all processes that still running
         # print("inner: recived cancel")
+        for process, script in running_processes:
+        #     # process.pid will be pid of /bin/sh -c python -u ./simulation/client/udp_window_deterministic.py w9 300 128 10 udp_client_1706125329_
+        #     # not python script itself, must find the real one first
+        #     print("hello")
+            command = f"ps | grep \"  {script}\"| grep -v grep" + "| awk '{print $1}'"
+            print(command)
+            real_pid, _ = await run_subprocess(command)
+            print(real_pid)
+        #     try:
+        #         print(int(real_pid.decode().strip()))
+        #         real_pid_int = int(real_pid.decode().strip())
+            if process not in finished_process:
+                os.kill(process.pid, signal.SIGTERM)
+        #     except ValueError:
+        #         # this mean real_pid is empty, so pass
+        #         pass
+        raise 
+        # raise
+    except Exception as e:
+        request.app.simulate_status += f"{request_body.alias_name} {time.time()}: unexpected exception occur {str(e)}"
+    finally:
+        # TODO: make stdout of cancelled process update to app.simulate_status
         # for process, script in running_processes:
         #     # process.pid will be pid of /bin/sh -c python -u ./simulation/client/udp_window_deterministic.py w9 300 128 10 udp_client_1706125329_
         #     # not python script itself, must find the real one first
@@ -139,7 +161,9 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         #     command = f"ps | grep \"  {script}\"| grep -v grep" + "| awk '{print $1}'"
         #     print(command)
         #     real_pid, _ = await run_subprocess(command)
-        #     print(real_pid)
+        #     print(real_pid, process.pid)
+        #     ps_all, _ = await run_subprocess("ps")
+        #     print(ps_all)
         #     try:
         #         print(int(real_pid.decode().strip()))
         #         real_pid_int = int(real_pid.decode().strip())
@@ -147,29 +171,6 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         #     except ValueError:
         #         # this mean real_pid is empty, so pass
         #         pass
-        # raise 
-        raise
-    except Exception as e:
-        request.app.simulate_status += f"{request_body.alias_name} {time.time()}: unexpected exception occur {str(e)}"
-    finally:
-        # TODO: make stdout of cancelled process update to app.simulate_status
-        for process, script in running_processes:
-            # process.pid will be pid of /bin/sh -c python -u ./simulation/client/udp_window_deterministic.py w9 300 128 10 udp_client_1706125329_
-            # not python script itself, must find the real one first
-            print("hello")
-            command = f"ps | grep \"  {script}\"| grep -v grep" + "| awk '{print $1}'"
-            print(command)
-            real_pid, _ = await run_subprocess(command)
-            print(real_pid, process.pid)
-            ps_all, _ = await run_subprocess("ps")
-            print(ps_all)
-            try:
-                print(int(real_pid.decode().strip()))
-                real_pid_int = int(real_pid.decode().strip())
-                os.kill(int(real_pid.decode().strip()), signal.SIGTERM)
-            except ValueError:
-                # this mean real_pid is empty, so pass
-                pass
         # cancel the monitor task
         monitor_task.cancel()
         # wait all process to finish

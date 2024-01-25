@@ -40,6 +40,11 @@ def index(request: Request):
     # testing(request)
     return {"message": f"{app.simulate_status}"}
 
+@app.post("/sync_clock/{time_stamp}")
+async def sync_clock(time_stamp):
+    print(time_stamp, time.time())
+    time.clock_settime(time.CLOCK_REALTIME, float(time_stamp))
+
 @app.post("/configure/client")
 async def configure_client(request_body: ConfigureClientData):
     # ตรวจสอบว่ามีกำลังรัน simulate_task อยู่หรือไม่
