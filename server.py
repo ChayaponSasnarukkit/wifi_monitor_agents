@@ -6,7 +6,7 @@ from utils.run_subprocess import run_subprocess, is_client_config_active, is_ap_
 import uvicorn
 from contextlib import asynccontextmanager
 import asyncio
-import time
+import time, socket, subprocess
 
 
 app = FastAPI()
@@ -14,9 +14,26 @@ app = FastAPI()
 web_simulation_process = None
 file_simulation_process = None
 
+def blocking_udp_read():
+    sync = False
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    control_ip = subprocess.run(["uci", "get", "network.lan.ipaddr"], capture_output=True, text=True).stdout
+    udp_socket.bind((control_ip.strip(), 8808))
+    while True:
+        # thread will be block until data available 
+        data, addr = udp_socket.recvfrom(1024)
+        time_stamp = float(data.decode())
+        print(time.time()-time_stamp)
+        if not sync:
+            time.clock_settime_ns(time.CLOCK_REALTIME, int(time_stamp*10**9))
+            sync = True
+    
 @app.on_event("startup")
 async def startup_event():
     # initial global variable
+    loop = asyncio.get_running_loop()
+    app.udp_socket_thread = loop.run_in_executor(None, blocking_udp_read)
+    
     global web_simulation_process; global file_simulation_process
     web_simulation_process = await asyncio.create_subprocess_shell("python -u ./simulation/server/web_application.py")
     file_simulation_process = await asyncio.create_subprocess_shell("python -u ./simulation/server/file_transfer.py")
