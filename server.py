@@ -43,7 +43,7 @@ def index(request: Request):
 @app.post("/sync_clock/{time_stamp}")
 async def sync_clock(time_stamp):
     print(time_stamp, time.time())
-    time.clock_settime(time.CLOCK_REALTIME, float(time_stamp))
+    time.clock_settime_ns(time.CLOCK_REALTIME, int(float(time_stamp)*10**9))
 
 @app.post("/configure/client")
 async def configure_client(request_body: ConfigureClientData):
