@@ -69,6 +69,7 @@ def parsing_monitor_data(output: str):
     return {"Tx-Power": Tx_Power, "Signal": Signal, "Noise": Noise, "BitRate": BitRate}
 
 async def monitor(request: Request):
+    print("monitor task start")
     # find the interface to monitor on
     if request.app.active_radio == "2.4G":
         interface = "wlan1"
@@ -107,7 +108,9 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         for scenario in request_body.simulation_scenarios:
             max_timeout = max(scenario.timeout, max_timeout)
         # create monitor task
+        print("try to create task")
         monitor_task = asyncio.create_task(monitor(request))
+        print("after try to create task")
         # create subprocesses to run all scripts
         for script in run_scripts:
             process = await asyncio.create_subprocess_shell(script, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
