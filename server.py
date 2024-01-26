@@ -153,8 +153,7 @@ async def schedule_run_simulation_task(request_body: SimulateScenarioData, reque
     # reset old state data from old simulation
     app.simulate_status = ""
     app.read_ptr = 0
-    for field in app.monitor_data:
-        app.monitor_data[field] = []
+    app.monitor_data = {"Tx-Power": [], "Signal": [], "Noise": [], "BitRate": []}
     # schedule the new task
     app.simulate_task = asyncio.create_task(run_simulation_processes(request_body, request))
     return {"message": f"simulation task has been scheduled"}
