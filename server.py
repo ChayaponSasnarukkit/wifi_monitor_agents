@@ -27,10 +27,10 @@ def blocking_udp_read(event):
             data, addr = udp_socket.recvfrom(1024)
             time_stamp = float(data.decode())
             print(time.time()-time_stamp)
-            if cnt%3 == 0:
-                time.clock_settime_ns(time.CLOCK_REALTIME, int(time_stamp*10**9))
-                cnt = 0
-            cnt += 1
+            # if cnt%3 == 0:
+            time.clock_settime_ns(time.CLOCK_REALTIME, int(time_stamp*10**9))
+            #     cnt = 0
+            # cnt += 1
         if event.is_set():
             return
     
