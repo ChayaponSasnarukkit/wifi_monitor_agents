@@ -93,7 +93,7 @@ async def configure_client(request_body: ConfigureClientData):
     
     # polling check if wifi is connected with timeout 10 sec
     cnt = 0
-    while cnt < 10:
+    while cnt < 20:
         if await is_client_config_active(request_body):
             app.active_radio = request_body.radio
             return {"message": "wifi is connected"}
