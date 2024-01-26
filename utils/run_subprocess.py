@@ -80,10 +80,10 @@ async def monitor(request: Request):
         stdout, stderr = await run_subprocess(f"iwinfo {interface} info")
         now = time.time()
         data = parsing_monitor_data(stdout.decode())
-        print("while???")
+        # print("while???")
         for field in request.app.monitor_data:
             request.app.monitor_data[field].append((now, data[field]))
-        print(request.app.monitor_data)
+        # print(request.app.monitor_data)
         await asyncio.sleep(1)
     # NO CLEAN UP NEED => raise CancelledError as soon as it recieved
     
@@ -109,9 +109,9 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         for scenario in request_body.simulation_scenarios:
             max_timeout = max(scenario.timeout, max_timeout)
         # create monitor task
-        print("try to create task")
+        # print("try to create task")
         monitor_task = asyncio.create_task(monitor(request))
-        print("after try to create task")
+        # print("after try to create task")
         # create subprocesses to run all scripts
         for script in run_scripts:
             process = await asyncio.create_subprocess_shell(script, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
@@ -187,13 +187,13 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             request.app.simulate_status += stdout.decode()
         # make sure monitor is finish cleaning
         await asyncio.gather(monitor_task, return_exceptions=True)
-        print(request.app.monitor_data)
+        # print(request.app.monitor_data)
         print("read file")
         for file_path in transfer_files:
             data = read_json_file_and_delete_file(file_path)
             if data:
                 request.app.monitor_data.update(data)
-        print(request.app.monitor_data)
+        # print(request.app.monitor_data)
         # reset the app.simulate_task to None
         request.app.simulate_task: asyncio.Task = None
     
