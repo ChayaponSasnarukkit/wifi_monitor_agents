@@ -182,11 +182,13 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             request.app.simulate_status += stdout.decode()
         # make sure monitor is finish cleaning
         await asyncio.gather(monitor_task, return_exceptions=True)
+        print(request.app.monitor_data)
         print("read file")
         for file_path in transfer_files:
             data = read_json_file_and_delete_file(file_path)
             if data:
                 request.app.monitor_data.update(data)
+        print(request.app.monitor_data.update(data))
         # reset the app.simulate_task to None
         request.app.simulate_task: asyncio.Task = None
     
