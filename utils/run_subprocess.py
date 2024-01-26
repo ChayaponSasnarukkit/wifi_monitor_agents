@@ -80,9 +80,10 @@ async def monitor(request: Request):
         stdout, stderr = await run_subprocess(f"iwinfo {interface} info")
         now = time.time()
         data = parsing_monitor_data(stdout.decode())
+        print("while???")
         for field in request.app.monitor_data:
             request.app.monitor_data[field].append((now, data[field]))
-        print(request.app.monitor_data[field])
+        print(request.app.monitor_data)
         await asyncio.sleep(1)
     # NO CLEAN UP NEED => raise CancelledError as soon as it recieved
     
