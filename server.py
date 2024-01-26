@@ -18,6 +18,7 @@ def blocking_udp_read(event):
     cnt = 0
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     control_ip = subprocess.run(["uci", "get", "network.lan.ipaddr"], capture_output=True, text=True).stdout
+    udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     udp_socket.bind((control_ip.strip(), 8808))
     udp_socket.setblocking(0)
     while True:
