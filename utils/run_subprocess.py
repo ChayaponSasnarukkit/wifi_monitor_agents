@@ -81,6 +81,7 @@ async def monitor(request: Request):
         data = parsing_monitor_data(stdout.decode())
         for field in request.app.monitor_data:
             request.app.monitor_data[field].append((now, data[field]))
+        print(request.app.monitor_data[field])
         await asyncio.sleep(1)
     # NO CLEAN UP NEED => raise CancelledError as soon as it recieved
     
@@ -188,7 +189,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             data = read_json_file_and_delete_file(file_path)
             if data:
                 request.app.monitor_data.update(data)
-        print(request.app.monitor_data.update(data))
+        print(request.app.monitor_data)
         # reset the app.simulate_task to None
         request.app.simulate_task: asyncio.Task = None
     
