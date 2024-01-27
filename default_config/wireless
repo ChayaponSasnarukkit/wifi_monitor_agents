@@ -59,6 +59,6 @@ config wifi-iface 'client_radio0'
 	option encryption 'psk2'
 	option key 'qbil0530'
 	option ssid 'GalaxyNote10+25bc'
-	option disabled '0'
+	option disabled '1'
 	option ifname 'wlan0'
 
