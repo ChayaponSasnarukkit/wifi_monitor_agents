@@ -74,7 +74,7 @@ def _generate_script_for_run_client_simulation(alias_name: str, scenario: Simula
 def _generate_script_for_run_ap_simulation(alias_name: str, scenario: SimulateDetail):
     if scenario.simulation_type == "deterministic":
         tmp_file = f"udp_server_{str(time.time()).replace('.', '_')}.json"
-        return f"python -u ./simulation/server/udp_window_deterministic.py {alias_name} {scenario.timeout} {tmp_file}"
+        return f"python -u ./simulation/server/udp_window_deterministic.py {alias_name} {scenario.timeout} {tmp_file}", tmp_file
     return None, None
 
 def generate_scripts_for_run_simulation(request_body: SimulateScenarioData):
