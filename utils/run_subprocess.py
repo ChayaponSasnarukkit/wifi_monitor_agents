@@ -13,8 +13,11 @@ async def run_subprocess(command: str):
         raise HTTPException(400, f"failed to execute command: {command}")
     return stdout, stderr
 
-def _is_client_config_active(link_status: str, new_ssid: str) -> bool:
+async def _is_client_config_active(link_status: str, new_ssid: str) -> bool:
     if link_status.find(f"SSID: {new_ssid}") != -1:
+        stdout, stderr = await run_subprocess("ifconfig wlan0")
+        if stdout.decode().find("inet addr:") == -1:
+            return False
         return True
     else:
         return False
@@ -30,7 +33,7 @@ async def is_client_config_active(request_body: ConfigureClientData) -> bool:
         if stdout.decode().find("wlan1") == -1:
             return False
         stdout, stderr = await run_subprocess("iw dev wlan1 link")
-    return _is_client_config_active(stdout.decode(), request_body.ssid)
+    return (await _is_client_config_active(stdout.decode(), request_body.ssid))
     
 def _is_ap_config_active(link_status: str, ssid: str, tx_power: int, request_body: ConfigureAccessPointData) -> bool:
     if int(link_status[link_status.find("TX packets:") + 11]) > 0 and ssid == request_body.ssid and tx_power == request_body.tx_power:
