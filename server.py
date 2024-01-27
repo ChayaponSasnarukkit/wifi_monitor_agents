@@ -89,6 +89,7 @@ async def configure_client(request_body: ConfigureClientData):
         # reset the configuration
         await run_subprocess("cp ./default_config/wireless /etc/config/wireless")
         # configure the new configuration
+        print(generate_client_script(request_body), request_body)
         await run_subprocess(generate_client_script(request_body))
     # lock is released automatically...
     
