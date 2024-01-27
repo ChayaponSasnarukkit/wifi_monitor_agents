@@ -155,8 +155,8 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         #         pass
         raise 
         # raise
-    except Exception as e:
-        request.app.simulate_status += f"{request_body.alias_name} {time.time()}: unexpected exception occur {str(e)}"
+    # except Exception as e:
+    #     request.app.simulate_status += f"{request_body.alias_name} {time.time()}: unexpected exception occur {str(e)}"
     finally:
         # TODO: make stdout of cancelled process update to app.simulate_status
         # for process, script in running_processes:
