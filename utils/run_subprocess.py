@@ -114,6 +114,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         # print("after try to create task")
         # create subprocesses to run all scripts
         for script in run_scripts:
+            print(script)
             process = await asyncio.create_subprocess_shell(script, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             running_processes.append((process, script))
         # polling until it complete

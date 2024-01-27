@@ -207,3 +207,4 @@ if __name__ == "__main__":
     main()
     
 # python C:\Users\hp\OneDrive\Desktop\final_project\wifi_monitor_agents\simulation\client\udp_window_deterministic.py test 5 1024 1 C:\Users\hp\OneDrive\Desktop\final_project\wifi_monitor_agents\simulation\client\tmptmp.txt 192.168.1.1 127.0.0.1
+# python ./simulation/client/udp_window_deterministic.py test 30 1024 100 ../tmp1.json 192.168.1.1

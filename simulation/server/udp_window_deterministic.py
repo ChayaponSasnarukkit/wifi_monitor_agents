@@ -212,3 +212,5 @@ if __name__ == "__main__":
     main()
     
     "python ./simulation/server/udp_window_deterministic.py test 60 ./simulation/server/udp_test1.json"
+    "python ./simulation/server/udp_window_deterministic.py test 30 ../udp_test1.json"
+    
