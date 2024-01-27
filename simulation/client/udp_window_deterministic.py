@@ -157,7 +157,9 @@ def main():
             if now >= next_time:
                 message[0] = str(seq_number).zfill(7).encode()
                 message[1] = f"{time.time():.7f}".encode()
+                print(message[1])
                 return_code = send_to(b"".join(message), server_addr)
+                # print(time.time())
                 if return_code != -1:
                     next_time = now + interval_time_sec
                     seq_number += 1
