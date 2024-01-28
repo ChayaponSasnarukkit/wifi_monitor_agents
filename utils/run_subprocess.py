@@ -13,9 +13,9 @@ async def run_subprocess(command: str):
         raise HTTPException(400, f"failed to execute command: {command}")
     return stdout, stderr
 
-async def _is_client_config_active(link_status: str, new_ssid: str) -> bool:
+async def _is_client_config_active(link_status: str, new_ssid: str, interface: str) -> bool:
     if link_status.find(f"SSID: {new_ssid}") != -1:
-        stdout, stderr = await run_subprocess("ifconfig wlan0")
+        stdout, stderr = await run_subprocess("ifconfig {interface}")
         if stdout.decode().find("inet addr:") == -1:
             return False
         return True
@@ -28,12 +28,13 @@ async def is_client_config_active(request_body: ConfigureClientData) -> bool:
         if stdout.decode().find("wlan0") == -1:
             return False
         stdout, stderr = await run_subprocess("iw dev wlan0 link")
+        return (await _is_client_config_active(stdout.decode(), request_body.ssid, "wlan0"))
     else:
         stdout, stderr = await run_subprocess("ifconfig")
         if stdout.decode().find("wlan1") == -1:
             return False
         stdout, stderr = await run_subprocess("iw dev wlan1 link")
-    return (await _is_client_config_active(stdout.decode(), request_body.ssid))
+        return (await _is_client_config_active(stdout.decode(), request_body.ssid, "wlan1"))
     
 def _is_ap_config_active(link_status: str, ssid: str, tx_power: int, request_body: ConfigureAccessPointData) -> bool:
     if int(link_status[link_status.find("TX packets:") + 11]) > 0 and ssid == request_body.ssid and tx_power == request_body.tx_power:
