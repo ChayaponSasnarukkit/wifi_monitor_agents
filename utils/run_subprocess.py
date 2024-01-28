@@ -48,6 +48,9 @@ async def is_ap_config_active(request_body: ConfigureAccessPointData) -> bool:
         if stdout.decode().find("wlan0") == -1:
             return False
         link_status, _ = await run_subprocess("ifconfig wlan0")
+        link_status = link_status.decode()
+        if link_status.find("inet addr:") == -1:
+            return False
         ssid, _ = await run_subprocess("uci get wireless.AP_radio0.ssid")
         tx_power, _ = await run_subprocess("uci get wireless.radio0.txpower")
     else:
