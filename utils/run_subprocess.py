@@ -15,7 +15,7 @@ async def run_subprocess(command: str):
 
 async def _is_client_config_active(link_status: str, new_ssid: str, interface: str) -> bool:
     if link_status.find(f"SSID: {new_ssid}") != -1:
-        stdout, stderr = await run_subprocess("ifconfig {interface}")
+        stdout, stderr = await run_subprocess(f"ifconfig {interface}")
         if stdout.decode().find("inet addr:") == -1:
             return False
         return True
