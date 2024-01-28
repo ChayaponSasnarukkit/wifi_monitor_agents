@@ -50,6 +50,11 @@ def generate_client_script(request_body: ConfigureClientData):
             ).strip().replace("\n",";")
 
 def generate_ap_script(request_body: ConfigureAccessPointData):
+    print(ap_template.format(
+        radio_name=get_radio_name(request_body.radio),
+        ssid = request_body.ssid,
+        tx_power = request_body.tx_power
+    ).strip().replace("\n",";"))
     return ap_template.format(
         radio_name=get_radio_name(request_body.radio),
         ssid = request_body.ssid,
