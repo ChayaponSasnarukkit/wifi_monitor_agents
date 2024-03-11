@@ -89,6 +89,7 @@ async def monitor(request: Request, request_body: SimulateScenarioData):
     while True:
         print("123")
         stdout, stderr = await run_subprocess(f"iwinfo {interface} info")
+        print("3.5", f"ping {request_body.server_ip} -n 1")
         ping_out, ping_err = await run_subprocess(f"ping {request_body.server_ip} -n 1")
         print("456")
         now = time.time()
