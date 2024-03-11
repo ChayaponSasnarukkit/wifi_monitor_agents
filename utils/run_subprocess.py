@@ -124,7 +124,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             max_timeout = max(scenario.timeout, max_timeout)
         # create monitor task
         # print("try to create task")
-        monitor_task = asyncio.create_task(monitor(request))
+        monitor_task = asyncio.create_task(monitor(request, request_body))
         # print("after try to create task")
         # create subprocesses to run all scripts
         for script in run_scripts:
