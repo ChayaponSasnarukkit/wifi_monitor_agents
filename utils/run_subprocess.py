@@ -78,7 +78,7 @@ def parsing_monitor_data(output: str):
     BitRate = output[6].split(" ")[12]
     return {"Tx-Power": Tx_Power, "Signal": Signal, "Noise": Noise, "BitRate": BitRate}
 
-async def monitor(request: Request):
+async def monitor(request: Request, request_body: SimulateScenarioData):
     print("monitor task start")
     # find the interface to monitor on
     if request.app.active_radio == "2.4G":
@@ -88,12 +88,16 @@ async def monitor(request: Request):
     
     while True:
         stdout, stderr = await run_subprocess(f"iwinfo {interface} info")
+        ping_out, ping_err = await run_subprocess(f"ping {request_body.server_ip} -n 1")
         now = time.time()
         data = parsing_monitor_data(stdout.decode())
+        ping_out = ping_out.decode()
+        ping_RTT = ping_out[ping_out.find("time")+5:].split()[0][:-2]
         # print("while???")
         for field in request.app.monitor_data:
             request.app.monitor_data[field].append((now, data[field]))
         # print(request.app.monitor_data)
+        request.app.monitor_data["ping_RTT"].append(ping_RTT)
         await asyncio.sleep(1)
     # NO CLEAN UP NEED => raise CancelledError as soon as it recieved
     
@@ -206,7 +210,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
                 request.app.monitor_data.update(data)
         # print(request.app.monitor_data)
         # reset the app.simulate_task to None
-        request.app.simulate_task: asyncio.Task = None
+        request.app.simulate_task = None
     
     # from utils.run_subprocess import check_inuse_client_config
 async def polling_ap_state(request: Request, request_body):

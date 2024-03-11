@@ -6,6 +6,7 @@ from utils.run_subprocess import run_subprocess, is_client_config_active, is_ap_
 import uvicorn
 from contextlib import asynccontextmanager
 import asyncio
+import requests
 import time, socket, subprocess, select, threading
 
 
@@ -34,6 +35,15 @@ def blocking_udp_read(event):
             # cnt += 1
         if event.is_set():
             return
+
+def send_keep_alive(event):
+    control_ip = subprocess.run(["uci", "get", "network.lan.ipaddr"], capture_output=True, text=True).stdout
+    control_ip = control_ip.strip()
+    while True:
+        res = requests.post("http://192.168.1.254/scenario/0/node/keep_alive", json={"control_ip": control_ip})
+        time.sleep(60)
+        if event.is_set():
+            return
     
 @app.on_event("startup")
 async def startup_event():
@@ -41,17 +51,17 @@ async def startup_event():
     app.my_event = threading.Event()
     loop = asyncio.get_running_loop()
     app.udp_socket_thread = loop.run_in_executor(None, blocking_udp_read, app.my_event)
+    app.keep_alive_thread = loop.run_in_executor(None, send_keep_alive, app.my_event)
     
     global web_simulation_process; global file_simulation_process
     web_simulation_process = await asyncio.create_subprocess_shell("python -u ./simulation/server/web_application.py")
     file_simulation_process = await asyncio.create_subprocess_shell("python -u ./simulation/server/file_transfer.py")
     app.ap_state = "not_ready_to_use"
-    app.simulate_task: asyncio.Task = None
+    app.simulate_task = None
     app.simulate_status = ""
-    app.read_ptr = 0
     app.writing_configure_lock = asyncio.Lock()
     app.active_radio = None
-    app.monitor_data = {"Tx-Power": [], "Signal": [], "Noise": [], "BitRate": []}
+    app.monitor_data = {"Tx-Power": [], "Signal": [], "Noise": [], "BitRate": [], "ping_RTT": []}
     
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -155,7 +165,7 @@ async def schedule_run_simulation_task(request_body: SimulateScenarioData, reque
     # reset old state data from old simulation
     app.simulate_status = ""
     app.read_ptr = 0
-    app.monitor_data = {"Tx-Power": [], "Signal": [], "Noise": [], "BitRate": []}
+    app.monitor_data = {"Tx-Power": [], "Signal": [], "Noise": [], "BitRate": [], "ping_RTT": []}
     # schedule the new task
     app.simulate_task = asyncio.create_task(run_simulation_processes(request_body, request))
     return {"message": f"simulation task has been scheduled"}
