@@ -41,6 +41,7 @@ def send_keep_alive(event):
     control_ip = control_ip.strip()
     while True:
         res = requests.post("http://192.168.1.254/scenario/0/node/keep_alive", json={"control_ip": control_ip})
+        print(res)
         time.sleep(60)
         if event.is_set():
             return
