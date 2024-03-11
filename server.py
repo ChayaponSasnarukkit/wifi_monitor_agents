@@ -45,7 +45,7 @@ def send_keep_alive(event):
         time.sleep(60)
         if event.is_set():
             return
-    
+
 @app.on_event("startup")
 async def startup_event():
     # initial global variable
@@ -68,6 +68,7 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     app.my_event.set()
+    app.my_event2.set()
     web_simulation_process.terminate()
     file_simulation_process.terminate()
 

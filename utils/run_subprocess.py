@@ -1,5 +1,5 @@
 import asyncio
-import os, platform, time, json, subprocess
+import os, platform, time, json, subprocess, threading
 import signal
 from fastapi import HTTPException, Request
 from schemas import ConfigureClientData, ConfigureAccessPointData, SimulateScenarioData
@@ -87,22 +87,35 @@ async def monitor(request: Request, request_body: SimulateScenarioData):
         interface = "wlan0"
     
     while True:
-        print("123")
+        # print("123")
         stdout, stderr = await run_subprocess(f"iwinfo {interface} info")
-        print(f"ping {request_body.server_ip} -c1")
-        ping_out = subprocess.run(["ping", request_body.server_ip, "-c1"],capture_output=True, text=True).stdout
-        print(ping_out)
-        print("456")
+        # print(f"ping {request_body.server_ip} -c1")
+        # ping_out = subprocess.run(["ping", request_body.server_ip, "-c1"],capture_output=True, text=True).stdout
+        # print(ping_out)
+        # print("456")
         now = time.time()
         data = parsing_monitor_data(stdout.decode())
-        ping_RTT = ping_out[ping_out.find("time")+5:].split()[0][:-2].strip()
+        # ping_RTT = ping_out[ping_out.find("time")+5:].split()[0][:-2].strip()
         # print("while???")
         for field in request.app.monitor_data:
             request.app.monitor_data[field].append((now, data[field]))
-        request.app.monitor_data["ping_RTT"].append(ping_RTT)
-        print(request.app.monitor_data)
+        # request.app.monitor_data["ping_RTT"].append(ping_RTT)
+        # print(request.app.monitor_data)
         await asyncio.sleep(1)
     # NO CLEAN UP NEED => raise CancelledError as soon as it recieved
+
+def test_ping(request: Request, server_ip, event):
+    while True:
+        ping_out = subprocess.run(["ping", server_ip, "-c1"],capture_output=True, text=True).stdout
+        print(ping_out)
+        try:
+            ping_RTT = ping_out[ping_out.find("time")+5:].split()[0][:-2].strip()
+            request.app.monitor_data["ping_RTT"].append((time.time(), ping_RTT))
+        except:
+            pass
+        time.sleep(1)
+        if event.is_set():
+            return
     
 def read_json_file_and_delete_file(file_path):
     try:
@@ -128,6 +141,10 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         # create monitor task
         # print("try to create task")
         monitor_task = asyncio.create_task(monitor(request, request_body))
+        if request_body.server_ip:
+            loop = asyncio.get_running_loop()
+            term_event = threading.Event()
+            ping_thread = loop.run_in_executor(None, test_ping, request, request_body.server_ip, term_event)
         # print("after try to create task")
         # create subprocesses to run all scripts
         for script in run_scripts:
@@ -196,6 +213,8 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         #         pass
         # cancel the monitor task
         monitor_task.cancel()
+        if request_body.server_ip:
+            term_event.set()
         # wait all process to finish
         for process, script in running_processes:
             print("wait process")
@@ -205,6 +224,7 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             request.app.simulate_status += stdout.decode()
         # make sure monitor is finish cleaning
         await asyncio.gather(monitor_task, return_exceptions=True)
+        await ping_thread
         # print(request.app.monitor_data)
         print("read file")
         for file_path in transfer_files:
