@@ -100,7 +100,7 @@ async def monitor(request: Request, request_body: SimulateScenarioData):
         for field in request.app.monitor_data:
             request.app.monitor_data[field].append((now, data[field]))
         # request.app.monitor_data["ping_RTT"].append(ping_RTT)
-        print(request.app.monitor_data)
+        # print(request.app.monitor_data)
         await asyncio.sleep(1)
     # NO CLEAN UP NEED => raise CancelledError as soon as it recieved
 
