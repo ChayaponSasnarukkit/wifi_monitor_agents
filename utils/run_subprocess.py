@@ -109,8 +109,9 @@ def test_ping(request: Request, server_ip, event):
         ping_out = subprocess.run(["ping", server_ip, "-c1"],capture_output=True, text=True).stdout
         # print(ping_out)
         try:
-            ping_RTT = ping_out[ping_out.find("time")+5:].split()[0][:-2].strip()
-            request.app.ping_RTT.append((time.time(), ping_RTT))
+            if ping_out.find("time") != -1:
+                ping_RTT = ping_out[ping_out.find("time")+5:].split()[0][:-2].strip()
+                request.app.ping_RTT.append((time.time(), ping_RTT))
         except:
             pass
         time.sleep(1)
