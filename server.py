@@ -50,9 +50,10 @@ def send_keep_alive(event):
 async def startup_event():
     # initial global variable
     app.my_event = threading.Event()
+    app.my_event2 = threading.Event()
     loop = asyncio.get_running_loop()
     app.udp_socket_thread = loop.run_in_executor(None, blocking_udp_read, app.my_event)
-    app.keep_alive_thread = loop.run_in_executor(None, send_keep_alive, app.my_event)
+    app.keep_alive_thread = loop.run_in_executor(None, send_keep_alive, app.my_event2)
     
     global web_simulation_process; global file_simulation_process
     web_simulation_process = await asyncio.create_subprocess_shell("python -u ./simulation/server/web_application.py")
