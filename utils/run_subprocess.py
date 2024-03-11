@@ -100,17 +100,17 @@ async def monitor(request: Request, request_body: SimulateScenarioData):
         for field in request.app.monitor_data:
             request.app.monitor_data[field].append((now, data[field]))
         # request.app.monitor_data["ping_RTT"].append(ping_RTT)
-        # print(request.app.monitor_data)
+        print(request.app.monitor_data)
         await asyncio.sleep(1)
     # NO CLEAN UP NEED => raise CancelledError as soon as it recieved
 
 def test_ping(request: Request, server_ip, event):
     while True:
         ping_out = subprocess.run(["ping", server_ip, "-c1"],capture_output=True, text=True).stdout
-        print(ping_out)
+        # print(ping_out)
         try:
             ping_RTT = ping_out[ping_out.find("time")+5:].split()[0][:-2].strip()
-            request.app.monitor_data["ping_RTT"].append((time.time(), ping_RTT))
+            request.app.ping_RTT.append((time.time(), ping_RTT))
         except:
             pass
         time.sleep(1)
@@ -213,8 +213,6 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
         #         pass
         # cancel the monitor task
         monitor_task.cancel()
-        if request_body.server_ip:
-            term_event.set()
         # wait all process to finish
         for process, script in running_processes:
             print("wait process")
@@ -224,13 +222,17 @@ async def run_simulation_processes(request_body: SimulateScenarioData, request: 
             request.app.simulate_status += stdout.decode()
         # make sure monitor is finish cleaning
         await asyncio.gather(monitor_task, return_exceptions=True)
-        await ping_thread
+        if request_body.server_ip:
+            term_event.set()
+            await ping_thread
+            request.app.monitor_data["ping_RTT"] = request.app.ping_RTT
         # print(request.app.monitor_data)
         print("read file")
         for file_path in transfer_files:
             data = read_json_file_and_delete_file(file_path)
             if data:
                 request.app.monitor_data.update(data)
+        
         # print(request.app.monitor_data)
         # reset the app.simulate_task to None
         request.app.simulate_task = None

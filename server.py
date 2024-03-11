@@ -63,7 +63,8 @@ async def startup_event():
     app.simulate_status = ""
     app.writing_configure_lock = asyncio.Lock()
     app.active_radio = None
-    app.monitor_data = {"Tx-Power": [], "Signal": [], "Noise": [], "BitRate": [], "ping_RTT": []}
+    app.monitor_data = {"Tx-Power": [], "Signal": [], "Noise": [], "BitRate": []}
+    app.ping_RTT = []
     
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -168,7 +169,8 @@ async def schedule_run_simulation_task(request_body: SimulateScenarioData, reque
     # reset old state data from old simulation
     app.simulate_status = ""
     app.read_ptr = 0
-    app.monitor_data = {"Tx-Power": [], "Signal": [], "Noise": [], "BitRate": [], "ping_RTT": []}
+    app.monitor_data = {"Tx-Power": [], "Signal": [], "Noise": [], "BitRate": []}
+    app.ping_RTT = []
     # schedule the new task
     app.simulate_task = asyncio.create_task(run_simulation_processes(request_body, request))
     return {"message": f"simulation task has been scheduled"}
