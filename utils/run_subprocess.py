@@ -87,8 +87,10 @@ async def monitor(request: Request, request_body: SimulateScenarioData):
         interface = "wlan0"
     
     while True:
+        print("123")
         stdout, stderr = await run_subprocess(f"iwinfo {interface} info")
         ping_out, ping_err = await run_subprocess(f"ping {request_body.server_ip} -n 1")
+        print("456")
         now = time.time()
         data = parsing_monitor_data(stdout.decode())
         ping_out = ping_out.decode()
