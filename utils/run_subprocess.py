@@ -90,11 +90,10 @@ async def monitor(request: Request, request_body: SimulateScenarioData):
         print("123")
         stdout, stderr = await run_subprocess(f"iwinfo {interface} info")
         print(f"ping {request_body.server_ip} -c1")
-        ping_out, ping_err = await run_subprocess(f"ping {request_body.server_ip} -c1")
+        ping_out = subprocess.run(["ping", request_body.server_ip, "-c1"],capture_output=True, text=True).stdout
         print("456")
         now = time.time()
         data = parsing_monitor_data(stdout.decode())
-        ping_out = ping_out.decode()
         ping_RTT = ping_out[ping_out.find("time")+5:].split()[0][:-2].strip()
         # print("while???")
         for field in request.app.monitor_data:
